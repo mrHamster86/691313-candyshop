@@ -1,7 +1,7 @@
 # Личный проект «Кэндишоп» [![Build status][travis-image]][travis-url]
 
 * Студент: [Евгений Логинов](https://up.htmlacademy.ru/javascript/15/user/691313).
-* Наставник: `Неизвестно`.
+* Наставник: [Александр Кравчук](https://htmlacademy.ru/profile/id807447).
 
 ---
 
