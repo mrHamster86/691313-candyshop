@@ -1,4 +1,3 @@
-var numberGoods = 26;
 var dataGoodsTemplate = {
   name: [
     'Чесночные сливки',
@@ -108,38 +107,37 @@ var dataGoodsTemplate = {
         'вилларибо',
         'виллабаджо'
       ],
-      length: 3
+      number: 3
     }
   }
 };
+var lengthListGoods = 26;
 
 //Генератор случайных чисел
 var getRandomNumber = function (min, max) {
   var randomNumber = Math.round(min - 0.5 + Math.random() * (max - min + 1));
-
   return randomNumber;
 };
 
-//Генератор случайных массивов с не повторяющимися элементами
-var getRandomArr = function(templateArr, length) {
-  var randomArr = [];
-
-  for (var i = 0; i < length; i++) {
-    var itemNumber = getRandomNumber(0, templateArr.length - 1);
-    var randomArrElement = templateArr[itemNumber];
-    randomArr.push(randomArrElement);
-    templateArr.splice(itemNumber, 1);
-  };
-
-  return randomArr;
+//Генератор случайного массива из массива, с не повторяющимися элементами
+var getRandomArr = function (arr, lengthArr) {
+  var copyArr = arr.slice();
+  var newArr = [];
+  for (var i = 0; i < lengthArr; i++) {
+    var itemNumber = getRandomNumber(0, copyArr.length - 1);
+    var randomArrElement = copyArr[itemNumber];
+    newArr.push(randomArrElement);
+    copyArr.splice(itemNumber, 1);
+  }
+  return newArr;
 };
 
 //Генератор случайного товара
 var getRandomGood = function (dataGoods) {
-  var ingredients = getRandomArr(dataGoodsTemplate.nutritionFacts.contents.name, dataGoodsTemplate.nutritionFacts.contents.length);
+  var ingredients = getRandomArr(dataGoods.nutritionFacts.contents.name, dataGoods.nutritionFacts.contents.number);
   var randomGood = {
-    name: dataGoods.name[getRandomNumber(0, dataGoods.name.length)],
-    picture: dataGoods.picture[getRandomNumber(0, dataGoods.picture.length)],
+    name: dataGoods.name[getRandomNumber(0, dataGoods.name.length - 1)],
+    picture: dataGoods.picture[getRandomNumber(0, dataGoods.picture.length - 1)],
     amount: getRandomNumber(dataGoods.amount.min, dataGoods.amount.max),
     price: getRandomNumber(dataGoods.price.min, dataGoods.price.max),
     weight: getRandomNumber(dataGoods.weight.min, dataGoods.weight.max),
@@ -155,4 +153,16 @@ var getRandomGood = function (dataGoods) {
   };
   return randomGood;
 };
-console.dir(getRandomGood(dataGoodsTemplate));
+
+//создаю список случайных товаров длинной lengthListGoods
+var getGoodsList = function (lengthArr) {
+  var goodList = [];
+  for (var i = 0; i < lengthArr; i++) {
+    var good = getRandomGood(dataGoodsTemplate);
+    goodList.push(good);
+  }
+  return goodList;
+};
+var goodsList = getGoodsList(lengthListGoods);
+
+console.dir(goodsList);
