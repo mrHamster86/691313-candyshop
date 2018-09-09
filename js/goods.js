@@ -1,4 +1,5 @@
-var dataGoodsTemplate = {
+'use strict';
+var dataTemplateGoods = {
   name: [
     'Чесночные сливки',
     'Огуречный педант',
@@ -111,17 +112,15 @@ var dataGoodsTemplate = {
     }
   }
 };
-var lengthListGoods = 26;
+var numberOfCatalogGoods = 26;
+var numberOfOrderGoods = 3;
 
-//Генератор случайных чисел
 var getRandomNumber = function (min, max) {
   var randomNumber = Math.round(min - 0.5 + Math.random() * (max - min + 1));
   return randomNumber;
 };
-
-//Генератор случайного массива из массива, с не повторяющимися элементами
-var getRandomArr = function (arr, lengthArr) {
-  var copyArr = arr.slice();
+var getRandomArr = function (originalArr, lengthArr) {
+  var copyArr = originalArr.slice();
   var newArr = [];
   for (var i = 0; i < lengthArr; i++) {
     var itemNumber = getRandomNumber(0, copyArr.length - 1);
@@ -131,38 +130,109 @@ var getRandomArr = function (arr, lengthArr) {
   }
   return newArr;
 };
+var getFragmentOfArr = function (odjectsArr, renderFunction) {
+  var fragment = document.createDocumentFragment();
+  for (var i = 0; i < odjectsArr.length; i++) {
+    fragment.appendChild(renderFunction(odjectsArr[i]));
+  }
+  return fragment;
+};
 
-//Генератор случайного товара
-var getRandomGood = function (dataGoods) {
-  var ingredients = getRandomArr(dataGoods.nutritionFacts.contents.name, dataGoods.nutritionFacts.contents.number);
-  var randomGood = {
-    name: dataGoods.name[getRandomNumber(0, dataGoods.name.length - 1)],
-    picture: dataGoods.picture[getRandomNumber(0, dataGoods.picture.length - 1)],
-    amount: getRandomNumber(dataGoods.amount.min, dataGoods.amount.max),
-    price: getRandomNumber(dataGoods.price.min, dataGoods.price.max),
-    weight: getRandomNumber(dataGoods.weight.min, dataGoods.weight.max),
+var getRandomGoods = function (dataTemplate) {
+  var ingredients = getRandomArr(dataTemplate.nutritionFacts.contents.name, dataTemplate.nutritionFacts.contents.number);
+  var randomGoods = {
+    name: dataTemplate.name[getRandomNumber(0, dataTemplate.name.length - 1)],
+    picture: 'img/cards/' + dataTemplate.picture[getRandomNumber(0, dataTemplate.picture.length - 1)],
+    amount: getRandomNumber(dataTemplate.amount.min, dataTemplate.amount.max),
+    price: getRandomNumber(dataTemplate.price.min, dataTemplate.price.max),
+    weight: getRandomNumber(dataTemplate.weight.min, dataTemplate.weight.max),
     rating: {
-      value: getRandomNumber(dataGoods.rating.value.min, dataGoods.rating.value.max),
-      number: getRandomNumber(dataGoods.rating.number.min, dataGoods.rating.number.max)
+      value: getRandomNumber(dataTemplate.rating.value.min, dataTemplate.rating.value.max),
+      number: getRandomNumber(dataTemplate.rating.number.min, dataTemplate.rating.number.max)
     },
     nutritionFacts: {
       sugar: getRandomNumber(0, 1) > 0,
-      energy: getRandomNumber(dataGoods.nutritionFacts.energy.min, dataGoods.nutritionFacts.energy.max),
+      energy: getRandomNumber(dataTemplate.nutritionFacts.energy.min, dataTemplate.nutritionFacts.energy.max),
       contents: ingredients.join(', ')
     }
   };
-  return randomGood;
+  return randomGoods;
 };
-
-//создаю список случайных товаров длинной lengthListGoods
-var getGoodsList = function (lengthArr) {
-  var goodList = [];
+var getRandomListGoods = function (dataTemplate, lengthArr) {
+  var randomGoodsList = [];
   for (var i = 0; i < lengthArr; i++) {
-    var good = getRandomGood(dataGoodsTemplate);
-    goodList.push(good);
+    var goods = getRandomGoods(dataTemplate);
+    randomGoodsList.push(goods);
   }
-  return goodList;
+  return randomGoodsList;
 };
-var goodsList = getGoodsList(lengthListGoods);
 
-console.dir(goodsList);
+var renderCardCatalog = function (goods) {
+  var card = document.querySelector('#card')
+    .content
+    .querySelector('.catalog__card')
+    .cloneNode(true);
+  if (goods.amount <= 5) {
+    card.classList.remove('card--in-stock');
+    if (goods.amount === 0) {
+      card.classList.add('card--soon');
+    }
+    if (goods.amount > 0) {
+      card.classList.add('card--little');
+    }
+  }
+  card.querySelector('.card__title').textContent = goods.name;
+  card.querySelector('.card__img').attributes.src.value = goods.picture;
+  card.querySelector('.card__img').attributes.alt.value = goods.name;
+  card.querySelector('.card__price').innerHTML = goods.price + ' <span class="card__currency">₽</span><span class="card__weight">/ ' + goods.weight + ' Г</span>';
+  if (goods.rating.value !== 5) {
+    card.querySelector('.stars__rating').classList.remove('stars__rating--five');
+    if (goods.rating.value === 1) {
+      card.querySelector('.stars__rating').classList.add('stars__rating--one');
+      card.querySelector('.stars__rating').textContent = 'Рейтинг: 1 звёзда';
+    }
+    if (goods.rating.value === 2) {
+      card.querySelector('.stars__rating').classList.add('stars__rating--two');
+      card.querySelector('.stars__rating').textContent = 'Рейтинг: 2 звёзды';
+    }
+    if (goods.rating.value === 3) {
+      card.querySelector('.stars__rating').classList.add('stars__rating--three');
+      card.querySelector('.stars__rating').textContent = 'Рейтинг: 3 звёзды';
+    }
+    if (goods.rating.value === 4) {
+      card.querySelector('.stars__rating').classList.add('stars__rating--four');
+      card.querySelector('.stars__rating').textContent = 'Рейтинг: 4 звёзды';
+    }
+  }
+  var sugarContent = 'Без сахара';
+  if (goods.nutritionFacts.sugar) {
+    sugarContent = 'Содержит сахар';
+  }
+  card.querySelector('.card__characteristic').textContent = sugarContent + '. ' + goods.nutritionFacts.energy + ' ккал';
+  card.querySelector('.card__composition-list').textContent = goods.nutritionFacts.contents;
+  return card;
+};
+var renderCardOrder = function (goods) {
+  var card = document.querySelector('#card-order')
+    .content
+    .querySelector('.goods_card')
+    .cloneNode(true);
+  card.querySelector('.card-order__title').textContent = goods.name;
+  card.querySelector('.card-order__img').attributes.src.value = goods.picture;
+  card.querySelector('.card-order__img').attributes.alt.value = goods.name;
+  card.querySelector('.card-order__price').textContent = goods.price + ' ₽';
+  return card;
+};
+
+var randomGoodsCatalog = getRandomListGoods(dataTemplateGoods, numberOfCatalogGoods);
+var randomGoodsOrder = getRandomListGoods(dataTemplateGoods, numberOfOrderGoods);
+var catalogCards = document.querySelector('.catalog__cards');
+var orderCards = document.querySelector('.goods__cards');
+
+catalogCards.classList.remove('catalog__cards--load');
+catalogCards.querySelector('.catalog__load').classList.add('visually-hidden');
+catalogCards.appendChild(getFragmentOfArr(randomGoodsCatalog, renderCardCatalog));
+
+orderCards.classList.remove('goods__cards--empty');
+orderCards.querySelector('.goods__card-empty').classList.add('visually-hidden');
+orderCards.appendChild(getFragmentOfArr(randomGoodsOrder, renderCardOrder));
