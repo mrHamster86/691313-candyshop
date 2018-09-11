@@ -122,7 +122,7 @@ var getRandomNumber = function (min, max) {
   return randomNumber;
 };
 var getRandomElement = function (arr) {
-  var randomElement = arr[getRandomNumber (0, arr.length - 1)];
+  var randomElement = arr[getRandomNumber(0, arr.length - 1)];
   return randomElement;
 };
 var getRandomArr = function (originalArr, lengthArr) {
@@ -180,11 +180,11 @@ var renderCardCatalog = function (goods) {
     .cloneNode(true);
   if (goods.amount <= 5) {
     card.classList.remove('card--in-stock');
-    switch (goods.amount){
+    switch (goods.amount) {
       case 0:
         card.classList.add('card--soon');
         break;
-      defoult:
+      default:
         card.classList.add('card--soon');
     }
   }
