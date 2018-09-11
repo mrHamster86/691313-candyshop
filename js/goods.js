@@ -117,25 +117,34 @@ var numberOfOrderGoods = 3;
 var catalogCards = document.querySelector('.catalog__cards');
 var orderCards = document.querySelector('.goods__cards');
 
-var getRandomNumber = function (min, max) {
+var getRandomNumber = function (a, b) {
+  if (b) {
+    var min = b < a ? b : a;
+    var max = b < a ? a : b;
+  } else {
+    min = 0;
+    max = a;
+  }
   var randomNumber = Math.round(min - 0.5 + Math.random() * (max - min + 1));
   return randomNumber;
 };
 var getRandomElement = function (arr) {
-  var randomElement = arr[getRandomNumber(0, arr.length - 1)];
+  var randomElement = arr[getRandomNumber(arr.length - 1)];
   return randomElement;
 };
 var getRandomArr = function (originalArr, lengthArr) {
   var copyArr = originalArr.slice();
   var newArr = [];
   for (var i = 0; i < lengthArr; i++) {
-    var itemNumber = getRandomNumber(0, copyArr.length - 1);
-    var randomArrElement = copyArr[itemNumber];
-    newArr.push(randomArrElement);
-    copyArr.splice(itemNumber, 1);
+    var j = getRandomNumber(i, copyArr.length - 1);
+    var temp = copyArr[i];
+    copyArr[i] = copyArr[j];
+    copyArr[j] = temp;
+    newArr.push(copyArr[i]);
   }
   return newArr;
 };
+
 var getFragmentOfArr = function (odjectsArr, renderFunction) {
   var fragment = document.createDocumentFragment();
   for (var i = 0; i < odjectsArr.length; i++) {
@@ -149,7 +158,7 @@ var getRandomGoods = function (dataTemplate) {
   var randomGoods = {
     name: getRandomElement(dataTemplate.name),
     picture: 'img/cards/' + getRandomElement(dataTemplate.picture),
-    amount: getRandomNumber(dataTemplate.amount.min, dataTemplate.amount.max),
+    amount: getRandomNumber(dataTemplate.amount.max),
     price: getRandomNumber(dataTemplate.price.min, dataTemplate.price.max),
     weight: getRandomNumber(dataTemplate.weight.min, dataTemplate.weight.max),
     rating: {
