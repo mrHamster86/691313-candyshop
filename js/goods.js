@@ -114,10 +114,16 @@ var dataTemplateGoods = {
 };
 var numberOfCatalogGoods = 26;
 var numberOfOrderGoods = 3;
+var catalogCards = document.querySelector('.catalog__cards');
+var orderCards = document.querySelector('.goods__cards');
 
 var getRandomNumber = function (min, max) {
   var randomNumber = Math.round(min - 0.5 + Math.random() * (max - min + 1));
   return randomNumber;
+};
+var getRandomElement = function (arr) {
+  var randomElement = arr[getRandomNumber (0, arr.length - 1)];
+  return randomElement;
 };
 var getRandomArr = function (originalArr, lengthArr) {
   var copyArr = originalArr.slice();
@@ -141,8 +147,8 @@ var getFragmentOfArr = function (odjectsArr, renderFunction) {
 var getRandomGoods = function (dataTemplate) {
   var ingredients = getRandomArr(dataTemplate.nutritionFacts.contents.name, dataTemplate.nutritionFacts.contents.number);
   var randomGoods = {
-    name: dataTemplate.name[getRandomNumber(0, dataTemplate.name.length - 1)],
-    picture: 'img/cards/' + dataTemplate.picture[getRandomNumber(0, dataTemplate.picture.length - 1)],
+    name: getRandomElement(dataTemplate.name),
+    picture: 'img/cards/' + getRandomElement(dataTemplate.picture),
     amount: getRandomNumber(dataTemplate.amount.min, dataTemplate.amount.max),
     price: getRandomNumber(dataTemplate.price.min, dataTemplate.price.max),
     weight: getRandomNumber(dataTemplate.weight.min, dataTemplate.weight.max),
@@ -174,11 +180,12 @@ var renderCardCatalog = function (goods) {
     .cloneNode(true);
   if (goods.amount <= 5) {
     card.classList.remove('card--in-stock');
-    if (goods.amount === 0) {
-      card.classList.add('card--soon');
-    }
-    if (goods.amount > 0) {
-      card.classList.add('card--little');
+    switch (goods.amount){
+      case 0:
+        card.classList.add('card--soon');
+        break;
+      defoult:
+        card.classList.add('card--soon');
     }
   }
   card.querySelector('.card__title').textContent = goods.name;
@@ -187,21 +194,23 @@ var renderCardCatalog = function (goods) {
   card.querySelector('.card__price').innerHTML = goods.price + ' <span class="card__currency">₽</span><span class="card__weight">/ ' + goods.weight + ' Г</span>';
   if (goods.rating.value !== 5) {
     card.querySelector('.stars__rating').classList.remove('stars__rating--five');
-    if (goods.rating.value === 1) {
-      card.querySelector('.stars__rating').classList.add('stars__rating--one');
-      card.querySelector('.stars__rating').textContent = 'Рейтинг: 1 звёзда';
-    }
-    if (goods.rating.value === 2) {
-      card.querySelector('.stars__rating').classList.add('stars__rating--two');
-      card.querySelector('.stars__rating').textContent = 'Рейтинг: 2 звёзды';
-    }
-    if (goods.rating.value === 3) {
-      card.querySelector('.stars__rating').classList.add('stars__rating--three');
-      card.querySelector('.stars__rating').textContent = 'Рейтинг: 3 звёзды';
-    }
-    if (goods.rating.value === 4) {
-      card.querySelector('.stars__rating').classList.add('stars__rating--four');
-      card.querySelector('.stars__rating').textContent = 'Рейтинг: 4 звёзды';
+    switch (goods.rating.value) {
+      case 1:
+        card.querySelector('.stars__rating').classList.add('stars__rating--one');
+        card.querySelector('.stars__rating').textContent = 'Рейтинг: 1 звёзда';
+        break;
+      case 2:
+        card.querySelector('.stars__rating').classList.add('stars__rating--two');
+        card.querySelector('.stars__rating').textContent = 'Рейтинг: 2 звёзды';
+        break;
+      case 3:
+        card.querySelector('.stars__rating').classList.add('stars__rating--three');
+        card.querySelector('.stars__rating').textContent = 'Рейтинг: 3 звёзды';
+        break;
+      case 4:
+        card.querySelector('.stars__rating').classList.add('stars__rating--four');
+        card.querySelector('.stars__rating').textContent = 'Рейтинг: 4 звёзды';
+        break;
     }
   }
   var sugarContent = 'Без сахара';
@@ -226,8 +235,6 @@ var renderCardOrder = function (goods) {
 
 var randomGoodsCatalog = getRandomListGoods(dataTemplateGoods, numberOfCatalogGoods);
 var randomGoodsOrder = getRandomListGoods(dataTemplateGoods, numberOfOrderGoods);
-var catalogCards = document.querySelector('.catalog__cards');
-var orderCards = document.querySelector('.goods__cards');
 
 catalogCards.classList.remove('catalog__cards--load');
 catalogCards.querySelector('.catalog__load').classList.add('visually-hidden');
