@@ -113,9 +113,13 @@ var dataTemplateGoods = {
   }
 };
 var numberOfCatalogGoods = 26;
-var numberOfOrderGoods = 3;
 var catalogCards = document.querySelector('.catalog__cards');
 var orderCards = document.querySelector('.goods__cards');
+var payment = document.querySelector('.payment__inner');
+var paymentToggle = payment.querySelector('.toggle-btn');
+var deliver = document.querySelector('.deliver');
+var deliverToggle = deliver.querySelector('.toggle-btn');
+var goodsInOrder = [];
 
 var getRandomNumber = function (a, b) {
   if (b) {
@@ -144,7 +148,20 @@ var getRandomArr = function (originalArr, lengthArr) {
   }
   return newArr;
 };
-
+var getElementNumber = function (arr, name) {
+  for (var i = 0; i < arr.length; i++) {
+    if (name === arr[i].name) {
+      var elementId = 1;
+      break;
+    }
+  }
+  return elementId;
+};
+var getFragment = function (object, renderFunction) {
+  var fragment = document.createDocumentFragment();
+  fragment.appendChild(renderFunction(object));
+  return fragment;
+};
 var getFragmentOfArr = function (odjectsArr, renderFunction) {
   var fragment = document.createDocumentFragment();
   for (var i = 0; i < odjectsArr.length; i++) {
@@ -194,7 +211,7 @@ var renderCardCatalog = function (goods) {
         card.classList.add('card--soon');
         break;
       default:
-        card.classList.add('card--soon');
+        card.classList.add('card--little');
     }
   }
   card.querySelector('.card__title').textContent = goods.name;
@@ -228,6 +245,17 @@ var renderCardCatalog = function (goods) {
   }
   card.querySelector('.card__characteristic').textContent = sugarContent + '. ' + goods.nutritionFacts.energy + ' ккал';
   card.querySelector('.card__composition-list').textContent = goods.nutritionFacts.contents;
+  card.querySelector('.card__btn-favorite').addEventListener('click', function (evt) {
+    evt.preventDefault();
+    onFavoriteClick(card);
+  });
+  card.querySelector('.card__btn').addEventListener('click', function (evt) {
+    evt.preventDefault();
+    if (goods.amount !== 0) {
+      onAddOrderClick(goods);
+    }
+  });
+
   return card;
 };
 var renderCardOrder = function (goods) {
@@ -239,16 +267,123 @@ var renderCardOrder = function (goods) {
   card.querySelector('.card-order__img').attributes.src.value = goods.picture;
   card.querySelector('.card-order__img').attributes.alt.value = goods.name;
   card.querySelector('.card-order__price').textContent = goods.price + ' ₽';
+  card.querySelector('.card-order__count').attributes.value.value = 1;
+  card.addEventListener('click', function (evt) {
+    evt.preventDefault();
+    var name = card.querySelector('.card-order__title').textContent;
+    var closeBtn = evt.target.classList.contains('card-order__close');
+    var increaseBtn = evt.target.classList.contains('card-order__btn--increase');
+    var decreaseBtn = evt.target.classList.contains('card-order__btn--decrease');
+    if (closeBtn) {
+      onCloseBtnClick(card, name);
+      return;
+    }
+    if (increaseBtn) {
+      onIncreaseBtnClick(card, name);
+      return;
+    }
+    if (decreaseBtn) {
+      onDecreaseBtnClick(card, name);
+      return;
+    }
+  });
+
   return card;
 };
 
 var randomGoodsCatalog = getRandomListGoods(dataTemplateGoods, numberOfCatalogGoods);
-var randomGoodsOrder = getRandomListGoods(dataTemplateGoods, numberOfOrderGoods);
 
 catalogCards.classList.remove('catalog__cards--load');
 catalogCards.querySelector('.catalog__load').classList.add('visually-hidden');
 catalogCards.appendChild(getFragmentOfArr(randomGoodsCatalog, renderCardCatalog));
 
-orderCards.classList.remove('goods__cards--empty');
-orderCards.querySelector('.goods__card-empty').classList.add('visually-hidden');
-orderCards.appendChild(getFragmentOfArr(randomGoodsOrder, renderCardOrder));
+var onFavoriteClick = function (card) {
+  var btnFavorite = card.querySelector('.card__btn-favorite');
+  if (!btnFavorite.classList.contains('card__btn-favorite--selected')) {
+    btnFavorite.classList.add('card__btn-favorite--selected');
+  } else {
+    btnFavorite.classList.remove('card__btn-favorite--selected');
+  }
+};
+
+var addMethodGoodsInOrder = function (goods) {
+  goods.value = 1;
+  goods.upValue = function () {
+    if (this.value < this.amount) {
+      this.value += 1;
+    }
+  };
+  goods.downValue = function () {
+    if (this.value > 1) {
+      this.value -= 1;
+    }
+  };
+};
+var addGoodsInOrder = function (goods) {
+  var i = getElementNumber(goodsInOrder, goods.name);
+  if (i >= 0) {
+    var count = orderCards.querySelectorAll('.card-order__count');
+    goodsInOrder[i].upValue();
+    count[i].attributes.value.value = goodsInOrder[i].value;
+    return;
+  }
+  orderCards.appendChild(getFragment(goods, renderCardOrder));
+  addMethodGoodsInOrder(goods);
+  goodsInOrder.push(goods);
+};
+var onAddOrderClick = function (goods) {
+  if (orderCards.classList.contains('goods__cards--empty')) {
+    orderCards.classList.remove('goods__cards--empty');
+    orderCards.querySelector('.goods__card-empty').classList.add('visually-hidden');
+  }
+  addGoodsInOrder(goods);
+};
+
+var onCloseBtnClick = function (card, name) {
+  var i = getElementNumber(goodsInOrder, name);
+  if (goodsInOrder.length === 1) {
+    orderCards.classList.add('goods__cards--empty');
+    orderCards.querySelector('.goods__card-empty').classList.remove('visually-hidden');
+  }
+  goodsInOrder.splice(i, 1);
+  card.remove();
+};
+
+var onIncreaseBtnClick = function (card, name) {
+  var i = getElementNumber(goodsInOrder, name);
+  goodsInOrder[i].upValue();
+  card.querySelector('.card-order__count').attributes.value.value = goodsInOrder[i].value;
+};
+var onDecreaseBtnClick = function (card, name) {
+  var i = getElementNumber(goodsInOrder, name);
+  goodsInOrder[i].downValue();
+  card.querySelector('.card-order__count').attributes.value.value = goodsInOrder[i].value;
+};
+
+var onPayCardBtnClick = function () {
+  payment.querySelector('.payment__cash-wrap').classList.add('visually-hidden');
+  payment.querySelector('.payment__card-wrap').classList.remove('visually-hidden');
+  paymentToggle.querySelector('label[for = "payment__cash"]').addEventListener('click', onPayCashBtnClick);
+  paymentToggle.querySelector('label[for = "payment__card"]').removeEventListener('click', onPayCardBtnClick);
+};
+var onPayCashBtnClick = function () {
+  payment.querySelector('.payment__card-wrap').classList.add('visually-hidden');
+  payment.querySelector('.payment__cash-wrap').classList.remove('visually-hidden');
+  paymentToggle.querySelector('label[for = "payment__card"]').addEventListener('click', onPayCardBtnClick);
+  paymentToggle.querySelector('label[for = "payment__cash"]').removeEventListener('click', onPayCashBtnClick);
+};
+paymentToggle.querySelector('label[for = "payment__cash"]').addEventListener('click', onPayCashBtnClick);
+
+var onDeliverStoreBtnClick = function () {
+  deliver.querySelector('.deliver__courier').classList.add('visually-hidden');
+  deliver.querySelector('.deliver__store').classList.remove('visually-hidden');
+  deliverToggle.querySelector('label[for = "deliver__courier"]').addEventListener('click', onDeliverCourierClick);
+  deliverToggle.querySelector('label[for = "deliver__store"]').removeEventListener('click', onDeliverStoreBtnClick);
+};
+var onDeliverCourierClick = function () {
+  deliver.querySelector('.deliver__store').classList.add('visually-hidden');
+  deliver.querySelector('.deliver__courier').classList.remove('visually-hidden');
+  deliverToggle.querySelector('label[for = "deliver__store"]').addEventListener('click', onDeliverStoreBtnClick);
+  deliverToggle.querySelector('label[for = "deliver__courier"]').removeEventListener('click', onDeliverCourierClick);
+};
+deliverToggle.querySelector('label[for = "deliver__courier"]').addEventListener('click', onDeliverCourierClick);
