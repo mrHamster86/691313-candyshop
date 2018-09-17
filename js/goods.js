@@ -119,7 +119,6 @@ var payment = document.querySelector('.payment__inner');
 var paymentToggle = payment.querySelector('.toggle-btn');
 var deliver = document.querySelector('.deliver');
 var deliverToggle = deliver.querySelector('.toggle-btn');
-var goodsInOrder = [];
 
 var getRandomNumber = function (a, b) {
   if (b) {
@@ -186,15 +185,18 @@ var getRandomGoods = function (dataTemplate) {
       sugar: getRandomNumber(0, 1) > 0,
       energy: getRandomNumber(dataTemplate.nutritionFacts.energy.min, dataTemplate.nutritionFacts.energy.max),
       contents: ingredients.join(', ')
-    }
+    },
+    count: 0
   };
   return randomGoods;
 };
+var goodsList = {};
 var getRandomListGoods = function (dataTemplate, lengthArr) {
   var randomGoodsList = [];
   for (var i = 0; i < lengthArr; i++) {
     var goods = getRandomGoods(dataTemplate);
     randomGoodsList.push(goods);
+    goodsList[goods.name] = randomGoodsList[i];
   }
   return randomGoodsList;
 };
@@ -245,19 +247,23 @@ var renderCardCatalog = function (goods) {
   }
   card.querySelector('.card__characteristic').textContent = sugarContent + '. ' + goods.nutritionFacts.energy + ' ккал';
   card.querySelector('.card__composition-list').textContent = goods.nutritionFacts.contents;
-  card.querySelector('.card__btn-favorite').addEventListener('click', function (evt) {
+  card.addEventListener('click', function (evt) {
     evt.preventDefault();
-    onAddFavoriteClick(card);
-  });
-  card.querySelector('.card__btn').addEventListener('click', function (evt) {
-    evt.preventDefault();
-    if (goods.amount !== 0) {
-      onAddOrderClick(goods);
+    var name = goods.name;
+    var isFavoriteBtn = evt.target.classList.contains('card__btn-favorite');
+    var isAddOrderBtn = evt.target.classList.contains('card__btn');
+    if (isFavoriteBtn) {
+      onFavoriteBtnClick(evt.target);
+    }
+    if (isAddOrderBtn) {
+      if (goods.amount !== 0) {
+        onAddOrderClick(name);
+      }
     }
   });
-
   return card;
 };
+
 var renderCardOrder = function (goods) {
   var card = document.querySelector('#card-order')
     .content
@@ -267,35 +273,34 @@ var renderCardOrder = function (goods) {
   card.querySelector('.card-order__img').attributes.src.value = goods.picture;
   card.querySelector('.card-order__img').attributes.alt.value = goods.name;
   card.querySelector('.card-order__price').textContent = goods.price + ' ₽';
-  card.querySelector('.card-order__count').value = 1;
-  card.querySelector('.card-order__count').max = goods.amount;
-
-  card.querySelector('.card-order__count').addEventListener('change', function () {
-  if (this.value > goods.amount) {
-    alert('Изивните, у нас нет ' + this.value + ' шт. Возмите ' + goods.amount + ' шт.');
-    this.value = goods.amount;
-  }
+  card.querySelector('.card-order__count').value = goods.count;
+  card.querySelector('.card-order__count').addEventListener('input', function (evt) {
+    this.value = this.value.replace(/\D/g, '');
+    if (this.value > goods.amount) {
+      alert('Изивните, у нас нет ' + this.value + ' шт. Возмите ' + goods.amount + ' шт.');
+      this.value = goods.amount;
+    }
+    if (this.value < 0 || !this.value) {
+      this.value = 0;
+    }
+    goods.count = this.value;
   });
   card.addEventListener('click', function (evt) {
     evt.preventDefault();
-    var name = card.querySelector('.card-order__title').textContent;
-    var closeBtn = evt.target.classList.contains('card-order__close');
-    var increaseBtn = evt.target.classList.contains('card-order__btn--increase');
-    var decreaseBtn = evt.target.classList.contains('card-order__btn--decrease');
-    if (closeBtn) {
+    var name = goods.name;
+    var isCloseBtn = evt.target.classList.contains('card-order__close');
+    var isIncreaseBtn = evt.target.classList.contains('card-order__btn--increase');
+    var isDecreaseBtn = evt.target.classList.contains('card-order__btn--decrease');
+    if (isCloseBtn) {
       onCloseBtnClick(card, name);
-      return;
     }
-    if (increaseBtn) {
+    if (isIncreaseBtn) {
       onIncreaseBtnClick(card, name);
-      return;
     }
-    if (decreaseBtn) {
+    if (isDecreaseBtn) {
       onDecreaseBtnClick(card, name);
-      return;
     }
   });
-
   return card;
 };
 
@@ -305,69 +310,55 @@ catalogCards.classList.remove('catalog__cards--load');
 catalogCards.querySelector('.catalog__load').classList.add('visually-hidden');
 catalogCards.appendChild(getFragmentOfArr(randomGoodsCatalog, renderCardCatalog));
 
-var onAddFavoriteClick = function (card) {
-  var btnFavorite = card.querySelector('.card__btn-favorite');
-  if (!btnFavorite.classList.contains('card__btn-favorite--selected')) {
-    btnFavorite.classList.add('card__btn-favorite--selected');
+var onFavoriteBtnClick = function (favoriteBtn) {
+  if (!favoriteBtn.classList.contains('card__btn-favorite--selected')) {
+    favoriteBtn.classList.add('card__btn-favorite--selected');
   } else {
-    btnFavorite.classList.remove('card__btn-favorite--selected');
+    favoriteBtn.classList.remove('card__btn-favorite--selected');
   }
 };
 
-var addMethodGoodsInOrder = function (goods) {
-  goods.value = 1;
-  goods.upValue = function () {
-    if (this.value < this.amount) {
-      this.value += 1;
-    } else {
-      alert('Изивните, у нас больше нет. Возмите ' + goods.amount + ' шт.');
-    }
-  };
-  goods.downValue = function () {
-    if (this.value > 1) {
-      this.value -= 1;
-    }
-  };
-};
-var addGoodsInOrder = function (goods) {
-  var i = getElementNumber(goodsInOrder, goods.name);
-  if (i >= 0) {
-    var count = orderCards.querySelectorAll('.card-order__count');
-    goodsInOrder[i].upValue();
-    count[i].value = goodsInOrder[i].value;
-    return;
+var addGoodsInOrder = function (name) {
+  goodsList[name].count++;
+  if (goodsList[name].count === 1) {
+    orderCards.appendChild(getFragment(goodsList[name], renderCardOrder));
   }
-  orderCards.appendChild(getFragment(goods, renderCardOrder));
-  addMethodGoodsInOrder(goods);
-  goodsInOrder.push(goods);
+  if (goodsList[name].count <= goodsList[name].amount) {
+
+  } else {
+    alert('Изивните, у нас больше нет. Возмите ' + goodsList[name].amount + ' шт.');
+  }
 };
-var onAddOrderClick = function (goods) {
+
+var onAddOrderClick = function (name) {
   if (orderCards.classList.contains('goods__cards--empty')) {
     orderCards.classList.remove('goods__cards--empty');
     orderCards.querySelector('.goods__card-empty').classList.add('visually-hidden');
   }
-  addGoodsInOrder(goods);
+  addGoodsInOrder(name);
 };
-
 var onCloseBtnClick = function (card, name) {
-  var i = getElementNumber(goodsInOrder, name);
-  if (goodsInOrder.length === 1) {
+  var orderList = orderCards.querySelectorAll('.goods_card');
+  if (orderList.length === 1) {
     orderCards.classList.add('goods__cards--empty');
     orderCards.querySelector('.goods__card-empty').classList.remove('visually-hidden');
   }
-  goodsInOrder.splice(i, 1);
+  goodsList[name].count = 0;
   card.remove();
 };
-
 var onIncreaseBtnClick = function (card, name) {
-  var i = getElementNumber(goodsInOrder, name);
-  goodsInOrder[i].upValue();
-  card.querySelector('.card-order__count').value = goodsInOrder[i].value;
+  if (goodsList[name].count < goodsList[name].amount) {
+    goodsList[name].count++;
+    card.querySelector('.card-order__count').value = goodsList[name].count;
+  } else {
+    alert('Изивните, у нас больше нет. Возмите ' + goodsList[name].amount + ' шт.');
+  }
 };
 var onDecreaseBtnClick = function (card, name) {
-  var i = getElementNumber(goodsInOrder, name);
-  goodsInOrder[i].downValue();
-  card.querySelector('.card-order__count').value = goodsInOrder[i].value;
+  if (goodsList[name].count > 0) {
+    goodsList[name].count--;
+    card.querySelector('.card-order__count').value = goodsList[name].count;
+  }
 };
 
 var onPayCardBtnClick = function () {
