@@ -271,8 +271,11 @@ var renderCardOrder = function (goods) {
     if (evt.target.value > goods.amount) {
       evt.target.value = goods.amount;
     }
-    if (evt.target.value < 0 || !evt.target.value) {
+    if (evt.target.value < 0) {
       evt.target.value = 0;
+    }
+    if (!evt.target.value) {
+      evt.target.value = goods.count;
     }
     goods.count = evt.target.value;
   });
