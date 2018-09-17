@@ -147,15 +147,7 @@ var getRandomArr = function (originalArr, lengthArr) {
   }
   return newArr;
 };
-var getElementNumber = function (arr, name) {
-  for (var i = 0; i < arr.length; i++) {
-    if (name === arr[i].name) {
-      var elementId = i;
-      break;
-    }
-  }
-  return elementId;
-};
+
 var getFragment = function (object, renderFunction) {
   var fragment = document.createDocumentFragment();
   fragment.appendChild(renderFunction(object));
@@ -275,15 +267,14 @@ var renderCardOrder = function (goods) {
   card.querySelector('.card-order__price').textContent = goods.price + ' ₽';
   card.querySelector('.card-order__count').value = goods.count;
   card.querySelector('.card-order__count').addEventListener('input', function (evt) {
-    this.value = this.value.replace(/\D/g, '');
-    if (this.value > goods.amount) {
-      alert('Изивните, у нас нет ' + this.value + ' шт. Возмите ' + goods.amount + ' шт.');
-      this.value = goods.amount;
+    evt.target.value = evt.target.value.replace(/\D/g, '');
+    if (evt.target.value > goods.amount) {
+      evt.target.value = goods.amount;
     }
-    if (this.value < 0 || !this.value) {
-      this.value = 0;
+    if (evt.target.value < 0 || !evt.target.value) {
+      evt.target.value = 0;
     }
-    goods.count = this.value;
+    goods.count = evt.target.value;
   });
   card.addEventListener('click', function (evt) {
     evt.preventDefault();
@@ -323,11 +314,6 @@ var addGoodsInOrder = function (name) {
   if (goodsList[name].count === 1) {
     orderCards.appendChild(getFragment(goodsList[name], renderCardOrder));
   }
-  if (goodsList[name].count <= goodsList[name].amount) {
-
-  } else {
-    alert('Изивните, у нас больше нет. Возмите ' + goodsList[name].amount + ' шт.');
-  }
 };
 
 var onAddOrderClick = function (name) {
@@ -350,8 +336,6 @@ var onIncreaseBtnClick = function (card, name) {
   if (goodsList[name].count < goodsList[name].amount) {
     goodsList[name].count++;
     card.querySelector('.card-order__count').value = goodsList[name].count;
-  } else {
-    alert('Изивните, у нас больше нет. Возмите ' + goodsList[name].amount + ' шт.');
   }
 };
 var onDecreaseBtnClick = function (card, name) {
