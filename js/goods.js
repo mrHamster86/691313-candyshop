@@ -131,6 +131,26 @@ var getRandomNumber = function (a, b) {
   var randomNumber = Math.round(min - 0.5 + Math.random() * (max - min + 1));
   return randomNumber;
 };
+var getParentHasClass = function (element, isHasClass) {
+  element = element.parentElement;
+  while (!element.classList.contains(isHasClass)) {
+    element = element.parentElement;
+    if (!element) {
+      break;
+    }
+  }
+  return element;
+};
+var getElementHasText = function (elementClass, isTextContent) {
+  var elementArr = document.querySelectorAll(elementClass);
+  for (var i = 0; i < elementArr.length; i++) {
+    if (elementArr[i].textContent === isTextContent) {
+      var elementHasText = elementArr[i];
+      break;
+    }
+  }
+  return elementHasText;
+};
 var getRandomElement = function (arr) {
   var randomElement = arr[getRandomNumber(arr.length - 1)];
   return randomElement;
@@ -316,6 +336,12 @@ var addGoodsInOrder = function (name) {
   goodsList[name].count++;
   if (goodsList[name].count === 1) {
     orderCards.appendChild(getFragment(goodsList[name], renderCardOrder));
+    return;
+  }
+  if (goodsList[name].count <= goodsList[name].amount || goodsList[name].count > 1) {
+    var title = getElementHasText('.card-order__title', goodsList[name].name);
+    var card = getParentHasClass(title, 'goods_card');
+    card.querySelector('.card-order__count').value = goodsList[name].count;
   }
 };
 
