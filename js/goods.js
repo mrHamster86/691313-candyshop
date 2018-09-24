@@ -301,12 +301,27 @@ var orderCards = document.querySelector('.goods__cards');
   };
   var addBasket = function () {
     var basket = document.querySelector('.main-header__basket');
-    switch (window.orderSetup.totalGoodsInOrder) {
-      case 0:
-        basket.textContent = 'В корзине ничего нет';
-        break;
+    var getLastNumber = function () {
+      var i = 0;
+      var j = 0;
+      var result = 0;
+      var arr = String(window.orderSetup.totalGoodsInOrder);
+      if (arr.length > 1) {
+        i = arr.length - 1;
+        j = arr.length - 2;
+        if (Number(arr[j]) !== 1) {
+          result = Number(arr[i]);
+        } else {
+          result = Number(arr[i]) + 10;
+        }
+      } else {
+        result = Number(arr);
+      }
+      return result;
+    };
+    switch (getLastNumber()) {
       case 1:
-        basket.textContent = 'В корзине 1 товар';
+        basket.textContent = 'В корзине ' + window.orderSetup.totalGoodsInOrder + ' товар';
         break;
       case 2:
       case 3:
@@ -315,6 +330,9 @@ var orderCards = document.querySelector('.goods__cards');
         break;
       default:
         basket.textContent = 'В корзине ' + window.orderSetup.totalGoodsInOrder + ' товаров';
+    }
+    if (window.orderSetup.totalGoodsInOrder === 0) {
+      basket.textContent = 'В корзине ничего нет';
     }
   };
   window.orderSetup = {
@@ -377,7 +395,7 @@ var orderCards = document.querySelector('.goods__cards');
   };
   var onAddOrderClick = function (name) {
     if (window.orderSetup.totalGoodsInOrder === 0) {
-      window.eventsOrderForm.unlockOrderForem();
+      window.eventsOrderForm.unlockOrderForm();
       orderCards.classList.toggle('goods__cards--empty');
       orderCards.querySelector('.goods__card-empty').classList.toggle('visually-hidden');
     }
@@ -385,7 +403,7 @@ var orderCards = document.querySelector('.goods__cards');
   };
   var onCardClick = function (evt) {
     evt.preventDefault();
-    var name = this.querySelector('.card__title').textContent;
+    var name = evt.currentTarget.querySelector('.card__title').textContent;
     var isFavoriteBtn = evt.target.classList.contains('card__btn-favorite');
     var isAddOrderBtn = evt.target.classList.contains('card__btn');
     if (isFavoriteBtn) {
@@ -426,8 +444,8 @@ var orderCards = document.querySelector('.goods__cards');
   };
   var onCardClick = function (evt) {
     evt.preventDefault();
-    var card = this;
-    var name = this.querySelector('.card-order__title').textContent;
+    var card = evt.currentTarget;
+    var name = evt.currentTarget.querySelector('.card-order__title').textContent;
     var isCloseBtn = evt.target.classList.contains('card-order__close');
     var isIncreaseBtn = evt.target.classList.contains('card-order__btn--increase');
     var isDecreaseBtn = evt.target.classList.contains('card-order__btn--decrease');
@@ -457,9 +475,9 @@ var orderCards = document.querySelector('.goods__cards');
   var deliverCourierBtn = deliver.querySelector('#deliver__courier');
   var buySubmitBtn = buy.querySelector('.buy__submit-btn');
 
-  var toggleDisabledForm = function (node, boolen) {
+  var toggleDisabledForm = function (node, boolean) {
     for (var i = 0; i < node.length; i++) {
-      node[i].disabled = boolen;
+      node[i].disabled = boolean;
     }
   };
   window.eventsOrderForm = {
@@ -471,7 +489,7 @@ var orderCards = document.querySelector('.goods__cards');
       deliverAddressFieldset.disabled = true;
       buySubmitBtn.disabled = true;
     },
-    unlockOrderForem: function () {
+    unlockOrderForm: function () {
       toggleDisabledForm(contact.querySelectorAll('input'), false);
       toggleDisabledForm(payment.querySelectorAll('.payment__method input'), false);
       toggleDisabledForm(deliver.querySelectorAll('.deliver__toggle input'), false);
@@ -535,17 +553,15 @@ var orderCards = document.querySelector('.goods__cards');
     }
   });
   nameInput.addEventListener('input', function (evt) {
-    var target = evt.target;
-    if (target.value.length < 2) {
-      target.setCustomValidity('Имя должно состоять минимум из 2-х символов');
+    if (evt.target.validity.tooShort) {
+      evt.target.setCustomValidity('Имя должно состоять минимум из 2-х символов');
     } else {
-      target.setCustomValidity('');
+      evt.target.setCustomValidity('');
     }
   });
   var numberValidity = function () {
     var sum = 0;
     var arr = cardNumber.value.replace(/\s/g, '').split('');
-    var result = false;
     if (arr.length === 16) {
       for (var i = 0; i < arr.length; i++) {
         arr[i] = +arr[i];
@@ -555,40 +571,27 @@ var orderCards = document.querySelector('.goods__cards');
             arr[i] -= 9;
           }
         }
-
         sum += arr[i];
       }
-      if (sum % 10 === 0) {
-        result = true;
-      }
     }
-    return result;
+    return sum % 10 === 0;
   };
   var dateValidity = function () {
-    var date = cardDate.value.split('/');
-    var currentYear = (new Date()).getFullYear();
-    var currentMonth = (new Date()).getMonth();
-    var month = +date[0];
-    var year = +date[1];
-    var result = false;
-    if (month > currentMonth && (2000 + year) >= currentYear) {
-      result = true;
-    }
-    return result;
+    var date = new Date();
+    var currentYear = date.getFullYear();
+    var currentMonth = date.getMonth();
+    var dateArr = cardDate.value.split('/');
+    var month = +dateArr[0];
+    var year = +dateArr[1];
+    return month > currentMonth && (2000 + year) >= currentYear;
   };
   var holderValidity = function () {
-    var result = false;
-    if (cardHolder.value.length > 4 && cardHolder.value.length < 25) {
-      result = true;
-    }
-    return result;
+    var length = cardHolder.value.length;
+    return length > 4 && length < 25;
   };
   var cvcValidity = function () {
-    var result = false;
-    if (cardCvc.value.length === 3) {
-      result = true;
-    }
-    return result;
+    var length = cardCvc.value.length;
+    return length === 3;
   };
   var onCardChange = function () {
     var cardStatus = payment.querySelector('.payment__card-status');
