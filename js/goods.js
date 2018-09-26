@@ -540,7 +540,12 @@ var orderCards = document.querySelector('.goods__cards');
   var cardDate = payment.querySelector('#payment__card-date');
   var cardHolder = payment.querySelector('#payment__cardholder');
   var cardCvc = payment.querySelector('#payment__card-cvc');
-
+  var BACK_SPACE = 8;
+  var letterReplacement = function (evt, invalidCharacter) {
+    if (invalidCharacter.test(evt.target.value)) {
+      evt.target.value = evt.target.value.replace(invalidCharacter, '');
+    }
+  };
   nameInput.addEventListener('invalid', function () {
     if (nameInput.validity.tooShort) {
       nameInput.setCustomValidity('Имя должно состоять минимум из 2-х символов');
@@ -559,22 +564,21 @@ var orderCards = document.querySelector('.goods__cards');
       evt.target.setCustomValidity('');
     }
   });
+
   var numberValidity = function () {
     var sum = 0;
     var arr = cardNumber.value.replace(/\s/g, '').split('');
-    if (arr.length === 16) {
-      for (var i = 0; i < arr.length; i++) {
-        arr[i] = +arr[i];
-        if (arr[i] % 2 !== 0) {
-          arr[i] *= 2;
-          if (arr[i] >= 10) {
-            arr[i] -= 9;
-          }
+    for (var i = 0; i < arr.length; i++) {
+      arr[i] = +arr[i];
+      if (arr[i] % 2 !== 0) {
+        arr[i] *= 2;
+        if (arr[i] >= 10) {
+          arr[i] -= 9;
         }
-        sum += arr[i];
       }
+      sum += arr[i];
     }
-    return sum % 10 === 0;
+    return sum % 10 === 0 && sum !== 0;
   };
   var dateValidity = function () {
     var date = new Date();
@@ -597,17 +601,188 @@ var orderCards = document.querySelector('.goods__cards');
     var cardStatus = payment.querySelector('.payment__card-status');
     if (numberValidity() && dateValidity() && cvcValidity() && holderValidity()) {
       cardStatus.textContent = 'Одобрен';
+      window.eventsOrderForm.cardStatusValidity = true;
     } else {
       cardStatus.textContent = 'Неизвестен';
+      window.eventsOrderForm.cardStatusValidity = false;
     }
   };
 
+  cardNumber.addEventListener('invalid', function () {
+    if (cardNumber.validity.tooShort) {
+      cardNumber.setCustomValidity('Введите 16-ти значный номер карты');
+    } else if (cardNumber.validity.valueMissing) {
+      cardNumber.setCustomValidity('Обязательное поле');
+    } else if (!numberValidity()) {
+      cardNumber.setCustomValidity('Похоже вы ошиблись при вводе номера карты');
+    } else {
+      cardNumber.setCustomValidity('');
+    }
+  });
+  cardNumber.addEventListener('input', function (evt) {
+    var invalidCharacter = /[-_&%$^\/|#+=.;":'~`<>?!a-zA-Zа-яА-Я]/;
+    letterReplacement(evt, invalidCharacter);
+    if (evt.target.value.length === 4 || evt.target.value.length === 9 || evt.target.value.length === 14) {
+      evt.target.value += ' ';
+    }
+    if (evt.target.validity.tooShort) {
+      evt.target.setCustomValidity('Введите 16-ти значный номер карты');
+    } else {
+      evt.target.setCustomValidity('');
+    }
+  });
+  cardNumber.addEventListener('keydown', function (evt) {
+    if (evt.target.value.length === 5 || evt.target.value.length === 10 || evt.target.value.length === 15) {
+      if (evt.keyCode === BACK_SPACE) {
+        evt.preventDefault();
+        evt.target.value = evt.target.value.substring(0, evt.target.value.length - 2);
+      }
+    }
+  });
+
+  cardDate.addEventListener('invalid', function () {
+    if (cardDate.validity.tooShort) {
+      cardDate.setCustomValidity('Укажите срок действия карты мм/гг');
+    } else if (cardDate.validity.valueMissing) {
+      cardDate.setCustomValidity('Обязательное поле');
+    } else if (!dateValidity()) {
+      cardDate.setCustomValidity('Ваша карта просрочена');
+    } else {
+      cardDate.setCustomValidity('');
+    }
+  });
+  cardDate.addEventListener('input', function (evt) {
+    var invalidCharacter = /[-_&%$^\|#+=.;":'~`<>?!a-zA-Zа-яА-Я]/;
+    letterReplacement(evt, invalidCharacter);
+    if (evt.target.value.length === 2) {
+      evt.target.value += '/';
+    }
+    if (evt.target.validity.tooShort) {
+      evt.target.setCustomValidity('Укажите срок действия карты мм/гг');
+    } else {
+      evt.target.setCustomValidity('');
+    }
+  });
+  cardDate.addEventListener('keydown', function (evt) {
+    if (evt.target.value.length === 3) {
+      if (evt.keyCode === BACK_SPACE) {
+        evt.preventDefault();
+        evt.target.value = evt.target.value.substring(0, evt.target.value.length - 2);
+      }
+    }
+  });
+
+  cardCvc.addEventListener('invalid', function () {
+    if (cardCvc.validity.tooShort) {
+      cardCvc.setCustomValidity('Введите CVC, это 3-и цифры указанные на обороте карты');
+    } else if (cardCvc.validity.valueMissing) {
+      cardCvc.setCustomValidity('Введите CVC, это 3-и цифры указанные на обороте карты');
+    } else {
+      cardCvc.setCustomValidity('');
+    }
+  });
+  cardCvc.addEventListener('input', function (evt) {
+    var invalidCharacter = /[-_&%$^\|#+=.;":'~`<>?!a-zA-Zа-яА-Я]/;
+    letterReplacement(evt, invalidCharacter);
+    if (evt.target.validity.tooShort) {
+      evt.target.setCustomValidity('Введите CVC, это 3-и цифры указанные на обороте карты');
+    } else {
+      evt.target.setCustomValidity('');
+    }
+  });
+  cardHolder.addEventListener('invalid', function () {
+    if (cardHolder.validity.tooShort) {
+      cardHolder.setCustomValidity('Введите имя держателя как указано на карте');
+    } else if (cardHolder.validity.valueMissing) {
+      cardHolder.setCustomValidity('Обязательное поле');
+    } else {
+      cardHolder.setCustomValidity('');
+    }
+  });
+  cardHolder.addEventListener('input', function (evt) {
+    var invalidCharacter = /[-_&%$^\|#+=.;":'~`<>?!0-9]/;
+    letterReplacement(evt, invalidCharacter);
+    evt.target.value = evt.target.value.toUpperCase();
+    if (evt.target.validity.tooShort) {
+      evt.target.setCustomValidity('Введите имя держателя как указано на карте');
+    } else {
+      evt.target.setCustomValidity('');
+    }
+  });
   cardNumber.addEventListener('blur', onCardChange);
   cardDate.addEventListener('blur', onCardChange);
   cardCvc.addEventListener('blur', onCardChange);
-  cardHolder.addEventListener('blur', onCardChange);
+  cardHolder.addEventListener('input', onCardChange);
+
+  var form = buy.querySelector('form');
+  form.addEventListener('submit', function (evt) {
+    var cardStatusValidity = window.eventsOrderForm.cardStatusValidity;
+    if (!cardStatusValidity) {
+      evt.preventDefault();
+      if (!numberValidity()) {
+        cardNumber.setCustomValidity('Проверьте номер карты');
+      } else if (!dateValidity()) {
+        cardDate.setCustomValidity('Проверьте срок действия вашей карты');
+      }
+    }
+  });
 }());
 
+(function () {
+  var catalogFilter = document.querySelector('.catalog__sidebar');
+
+  catalogFilter.addEventListener('mousedown', function (evt) {
+    evt.preventDefault();
+    window.cangeRangeFilter(evt);
+  });
+}());
+
+(function () {
+  window.cangeRangeFilter = function (evt) {
+    var scope = evt.currentTarget.querySelector('.range__filter');
+    var leftBtn = evt.currentTarget.querySelector('.range__btn--left');
+    var rightBtn = evt.currentTarget.querySelector('.range__btn--right');
+    var rangeFillLine = evt.currentTarget.querySelector('.range__fill-line');
+    var rangePriceMin = evt.currentTarget.querySelector('.range__price--min');
+    var rangePriceMax = evt.currentTarget.querySelector('.range__price--max');
+
+    var scopeWidth = scope.offsetWidth;
+    var coordsLeftBtn = leftBtn.offsetLeft * 100 / scopeWidth;
+    var coordsRightBtn = rightBtn.offsetLeft * 100 / scopeWidth;
+
+    var startCoords = evt.clientX;
+
+    var onMouseMove = function (moveEvt) {
+      moveEvt.preventDefault();
+      var shift = startCoords - moveEvt.clientX;
+      startCoords = moveEvt.clientX;
+
+      if (evt.target === leftBtn) {
+
+        var newCoordsLeftBtn = (leftBtn.offsetLeft - shift) * 100 / scopeWidth;
+        if (newCoordsLeftBtn >= 0 && newCoordsLeftBtn <= coordsRightBtn) {
+          leftBtn.style.left = newCoordsLeftBtn + '%';
+          rangeFillLine.style.left = newCoordsLeftBtn + '%';
+          rangePriceMin.textContent = Math.round(newCoordsLeftBtn) + '%';
+        }
+      } else if (evt.target === rightBtn) {
+        var newCoordsRightBtn = (rightBtn.offsetLeft - shift) * 100 / scopeWidth;
+        if (newCoordsRightBtn >= coordsLeftBtn && newCoordsRightBtn <= 100) {
+          rightBtn.style.left = newCoordsRightBtn + '%';
+          rangeFillLine.style.right = 100 - newCoordsRightBtn + '%';
+          rangePriceMax.textContent = Math.round(newCoordsRightBtn) + '%';
+        }
+      }
+    };
+    var onMouseUp = function (upEvt) {
+      upEvt.preventDefault();
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  };
+}());
 
 var randomGoodsCatalog = window.Data.getRandomListGoods(dataTemplateGoods, numberOfCatalogGoods);
 catalogCards.classList.remove('catalog__cards--load');
