@@ -729,50 +729,54 @@ var orderCards = document.querySelector('.goods__cards');
 }());
 
 (function () {
-  var catalogFilter = document.querySelector('.catalog__sidebar');
+  var range = document.querySelector('.range');
+  var scope = range.querySelector('.range__filter');
+  var leftPin = range.querySelector('.range__btn--left');
+  var rightPin = range.querySelector('.range__btn--right');
+  var fillLine = range.querySelector('.range__fill-line');
 
-  catalogFilter.addEventListener('mousedown', function (evt) {
-    evt.preventDefault();
-    window.cangeRangeFilter(evt);
-  });
-}());
+  var pinWidth = leftPin.offsetWidth;
+  var pinCenter = pinWidth / 2;
 
-(function () {
-  window.cangeRangeFilter = function (evt) {
-    var scope = evt.currentTarget.querySelector('.range__filter');
-    var leftBtn = evt.currentTarget.querySelector('.range__btn--left');
-    var rightBtn = evt.currentTarget.querySelector('.range__btn--right');
-    var rangeFillLine = evt.currentTarget.querySelector('.range__fill-line');
-    var rangePriceMin = evt.currentTarget.querySelector('.range__price--min');
-    var rangePriceMax = evt.currentTarget.querySelector('.range__price--max');
+  var calculatePrice = function () {
+    var min = range.querySelector('.range__price--min');
+    var max = range.querySelector('.range__price--max');
+    var scopeWidth = scope.offsetWidth - pinWidth;
+    min.textContent = Math.round(leftPin.offsetLeft * 100 / scopeWidth) + '%';
+    max.textContent = Math.round(rightPin.offsetLeft * 100 / scopeWidth) + '%';
+  };
 
-    var scopeWidth = scope.offsetWidth;
-    var coordsLeftBtn = leftBtn.offsetLeft * 100 / scopeWidth;
-    var coordsRightBtn = rightBtn.offsetLeft * 100 / scopeWidth;
+  range.addEventListener('mousedown', function (evt) {
+
+    var leftScope = 0;
+    var rightScope = scope.offsetWidth - pinWidth;
 
     var startCoords = evt.clientX;
-
     var onMouseMove = function (moveEvt) {
       moveEvt.preventDefault();
+
       var shift = startCoords - moveEvt.clientX;
       startCoords = moveEvt.clientX;
 
-      if (evt.target === leftBtn) {
-
-        var newCoordsLeftBtn = (leftBtn.offsetLeft - shift) * 100 / scopeWidth;
-        if (newCoordsLeftBtn >= 0 && newCoordsLeftBtn <= coordsRightBtn) {
-          leftBtn.style.left = newCoordsLeftBtn + '%';
-          rangeFillLine.style.left = newCoordsLeftBtn + '%';
-          rangePriceMin.textContent = Math.round(newCoordsLeftBtn) + '%';
+      var calculateNewCoords = function (targetPin) {
+        return targetPin.offsetLeft - shift;
+      }
+      if (evt.target === leftPin) {
+        var newCoords = calculateNewCoords(leftPin);
+        rightScope = rightPin.offsetLeft - pinWidth;
+        if (newCoords >= leftScope && newCoords <= rightScope) {
+          leftPin.style.left = newCoords + 'px';
+          fillLine.style.left = newCoords + 'px';
         }
-      } else if (evt.target === rightBtn) {
-        var newCoordsRightBtn = (rightBtn.offsetLeft - shift) * 100 / scopeWidth;
-        if (newCoordsRightBtn >= coordsLeftBtn && newCoordsRightBtn <= 100) {
-          rightBtn.style.left = newCoordsRightBtn + '%';
-          rangeFillLine.style.right = 100 - newCoordsRightBtn + '%';
-          rangePriceMax.textContent = Math.round(newCoordsRightBtn) + '%';
+      } else if (evt.target === rightPin) {
+        var newCoords = calculateNewCoords(rightPin);
+        leftScope = leftPin.offsetLeft + pinWidth;
+        if (newCoords <= rightScope && newCoords >= leftScope) {
+          rightPin.style.right = rightScope - newCoords + 'px';
+          fillLine.style.right = rightScope - newCoords + 'px';
         }
       }
+      calculatePrice();
     };
     var onMouseUp = function (upEvt) {
       upEvt.preventDefault();
@@ -781,8 +785,10 @@ var orderCards = document.querySelector('.goods__cards');
     };
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  };
+  });
+  calculatePrice();
 }());
+
 
 var randomGoodsCatalog = window.Data.getRandomListGoods(dataTemplateGoods, numberOfCatalogGoods);
 catalogCards.classList.remove('catalog__cards--load');
