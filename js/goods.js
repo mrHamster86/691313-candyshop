@@ -747,34 +747,37 @@ var orderCards = document.querySelector('.goods__cards');
 
   range.addEventListener('mousedown', function (evt) {
 
-    var leftScope = 0;
-    var rightScope = scope.offsetWidth - pinWidth;
-
     var startCoords = evt.clientX;
     var onMouseMove = function (moveEvt) {
-      var newCoords = 0;
       moveEvt.preventDefault();
-
       var shift = startCoords - moveEvt.clientX;
       startCoords = moveEvt.clientX;
 
-      var calculateNewCoords = function (targetPin) {
-        return targetPin.offsetLeft - shift;
-      };
       if (evt.target === leftPin) {
-        newCoords = calculateNewCoords(leftPin);
-        rightScope = rightPin.offsetLeft - pinWidth;
-        if (newCoords >= leftScope && newCoords <= rightScope) {
-          leftPin.style.left = newCoords + 'px';
-          fillLine.style.left = newCoords + 'px';
+        var leftScope = scope.offsetLeft;
+        var rightScope = scope.offsetLeft + rightPin.offsetLeft - pinWidth;
+        var newCoords = leftPin.offsetLeft - shift;
+        if (moveEvt.clientX < leftScope) {
+          newCoords = 0;
         }
-      } else if (evt.target === rightPin) {
-        newCoords = calculateNewCoords(rightPin);
-        leftScope = leftPin.offsetLeft + pinWidth;
-        if (newCoords <= rightScope && newCoords >= leftScope) {
-          rightPin.style.right = rightScope - newCoords + 'px';
-          fillLine.style.right = rightScope - newCoords + 'px';
+        if (moveEvt.clientX > rightScope) {
+          newCoords = rightScope - leftScope;
         }
+        leftPin.style.left = newCoords + 'px';
+        fillLine.style.left = newCoords + 'px';
+      }
+      if (evt.target === rightPin) {
+        leftScope = scope.offsetLeft + leftPin.offsetLeft + pinWidth;
+        rightScope = scope.offsetLeft + scope.offsetWidth - pinWidth;
+        newCoords = rightPin.offsetLeft - shift;
+        if (moveEvt.clientX < leftScope) {
+          newCoords = leftScope - scope.offsetLeft;
+        }
+        if (moveEvt.clientX > rightScope) {
+          newCoords = rightScope - scope.offsetLeft;
+        }
+        rightPin.style.right = rightScope - scope.offsetLeft - newCoords + 'px';
+        fillLine.style.right = rightScope - scope.offsetLeft - newCoords + 'px';
       }
       calculatePrice();
     };
@@ -788,7 +791,6 @@ var orderCards = document.querySelector('.goods__cards');
   });
   calculatePrice();
 }());
-
 
 var randomGoodsCatalog = window.Data.getRandomListGoods(dataTemplateGoods, numberOfCatalogGoods);
 catalogCards.classList.remove('catalog__cards--load');
