@@ -736,7 +736,6 @@ var orderCards = document.querySelector('.goods__cards');
   var fillLine = range.querySelector('.range__fill-line');
 
   var pinWidth = leftPin.offsetWidth;
-  var pinCenter = pinWidth / 2;
 
   var calculatePrice = function () {
     var min = range.querySelector('.range__price--min');
@@ -753,6 +752,7 @@ var orderCards = document.querySelector('.goods__cards');
 
     var startCoords = evt.clientX;
     var onMouseMove = function (moveEvt) {
+      var newCoords = 0;
       moveEvt.preventDefault();
 
       var shift = startCoords - moveEvt.clientX;
@@ -760,16 +760,16 @@ var orderCards = document.querySelector('.goods__cards');
 
       var calculateNewCoords = function (targetPin) {
         return targetPin.offsetLeft - shift;
-      }
+      };
       if (evt.target === leftPin) {
-        var newCoords = calculateNewCoords(leftPin);
+        newCoords = calculateNewCoords(leftPin);
         rightScope = rightPin.offsetLeft - pinWidth;
         if (newCoords >= leftScope && newCoords <= rightScope) {
           leftPin.style.left = newCoords + 'px';
           fillLine.style.left = newCoords + 'px';
         }
       } else if (evt.target === rightPin) {
-        var newCoords = calculateNewCoords(rightPin);
+        newCoords = calculateNewCoords(rightPin);
         leftScope = leftPin.offsetLeft + pinWidth;
         if (newCoords <= rightScope && newCoords >= leftScope) {
           rightPin.style.right = rightScope - newCoords + 'px';
