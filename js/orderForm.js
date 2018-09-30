@@ -1,6 +1,7 @@
 'use strict';
 (function () {
   var buy = document.querySelector('.buy');
+  var orderCards = buy.querySelector('.goods__cards');
   var contact = buy.querySelector('.contact-data');
   var payment = buy.querySelector('.payment__inner');
   var paymentInputCard = payment.querySelector('.payment__card-wrap').querySelectorAll('input');
@@ -140,10 +141,10 @@
     var cardStatus = payment.querySelector('.payment__card-status');
     if (numberValidity() && dateValidity() && cvcValidity() && holderValidity()) {
       cardStatus.textContent = 'Одобрен';
-      window.eventsOrderForm.cardStatusValidity = true;
+      window.orderForm.cardStatusValidity = true;
     } else {
       cardStatus.textContent = 'Неизвестен';
-      window.eventsOrderForm.cardStatusValidity = false;
+      window.orderForm.cardStatusValidity = false;
     }
   };
 
@@ -158,15 +159,14 @@
       cardNumber.setCustomValidity('');
     }
   });
-
-  cardNumber.addEventListener('keydown', function (evt) {
-    if (evt.target.value.length === 5 || evt.target.value.length === 10 || evt.target.value.length === 15) {
-      if (evt.keyCode === BACK_SPACE) {
-        evt.preventDefault();
-        evt.target.value = evt.target.value.substring(0, evt.target.value.length - 2);
-      }
+  cardNumber.addEventListener('input', function (evt) {
+    if (evt.target.validity.tooShort) {
+      evt.target.setCustomValidity('Введите 16-ти значный номер карты');
+    } else {
+      evt.target.setCustomValidity('');
     }
   });
+
 
   cardDate.addEventListener('invalid', function () {
     if (cardDate.validity.tooShort) {
@@ -280,15 +280,39 @@
   deliver.querySelector('.deliver__store-list').addEventListener('change', onStoreChange);
 
   var form = buy.querySelector('form');
+  var onLoadError = function (message) {
+    var modalError = document.querySelector('.modal--error');
+    modalError.classList.remove('modal--hidden');
+    modalError.querySelector('.modal__message').textContent = message;
+  };
+  var onLoadSuccess = function () {
+    var cards = orderCards.querySelectorAll('.card-order');
+    for (var i = 0; i < cards.length; i++) {
+      var name = cards[i].querySelector('.card-order__title').textContent;
+      window.orderSetup.deleteCard(cards[i], name);
+    }
+    window.orderForm.lockAllOrderForm();
+    orderCards.classList.toggle('goods__cards--empty');
+    orderCards.querySelector('.goods__card-empty').classList.toggle('visually-hidden');
+    document.querySelector('.modal--success').classList.remove('modal--hidden');
+  };
+
   form.addEventListener('submit', function (evt) {
-    var cardStatusValidity = window.eventsOrderForm.cardStatusValidity;
-    if (!cardStatusValidity) {
-      evt.preventDefault();
-      if (!numberValidity()) {
-        cardNumber.setCustomValidity('Проверьте номер карты');
-      } else if (!dateValidity()) {
-        cardDate.setCustomValidity('Проверьте срок действия вашей карты');
+    var cardStatusValidity = window.orderForm.cardStatusValidity;
+    evt.preventDefault();
+    var formData = new FormData(buy.querySelector('form'));
+    if (paymentCardBtn.checked) {
+      if (!cardStatusValidity) {
+        if (!numberValidity()) {
+          cardNumber.setCustomValidity('Проверьте номер карты');
+        } else if (!dateValidity()) {
+          cardDate.setCustomValidity('Проверьте срок действия вашей карты');
+        }
+      } else {
+        window.upload(formData, onLoadSuccess, onLoadError);
       }
+    } else {
+      window.upload(formData, onLoadSuccess, onLoadError);
     }
   });
 }());

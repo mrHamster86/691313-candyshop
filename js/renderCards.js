@@ -17,9 +17,10 @@
         }
       }
       card.querySelector('.card__title').textContent = goods.name;
-      card.querySelector('.card__img').attributes.src.value = goods.picture;
+      card.querySelector('.card__img').attributes.src.value = 'img/cards/' + goods.picture;
       card.querySelector('.card__img').attributes.alt.value = goods.name;
       card.querySelector('.card__price').innerHTML = goods.price + ' <span class="card__currency">₽</span><span class="card__weight">/ ' + goods.weight + ' Г</span>';
+      card.querySelector('.star__count').textContent = '(' + goods.rating.number + ')';
       if (goods.rating.value !== 5) {
         card.querySelector('.stars__rating').classList.remove('stars__rating--five');
         switch (goods.rating.value) {
@@ -56,7 +57,7 @@
         .querySelector('.goods_card')
         .cloneNode(true);
       card.querySelector('.card-order__title').textContent = goods.name;
-      card.querySelector('.card-order__img').src = goods.picture;
+      card.querySelector('.card-order__img').src = 'img/cards/' + goods.picture;
       card.querySelector('.card-order__img').alt = goods.name;
       card.querySelector('.card-order__price').textContent = goods.price + ' ₽';
       card.querySelector('.card-order__count').name = goods.name;

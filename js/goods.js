@@ -717,8 +717,8 @@ var orderCards = document.querySelector('.goods__cards');
   var form = buy.querySelector('form');
   form.addEventListener('submit', function (evt) {
     var cardStatusValidity = window.eventsOrderForm.cardStatusValidity;
+    evt.preventDefault();
     if (!cardStatusValidity) {
-      evt.preventDefault();
       if (!numberValidity()) {
         cardNumber.setCustomValidity('Проверьте номер карты');
       } else if (!dateValidity()) {
