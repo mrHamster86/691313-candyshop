@@ -18,17 +18,17 @@
       var result = 0;
       var arr = String(window.orderSetup.totalGoodsInOrder);
       if (arr.length > 1) {
-        i = arr.length - 1;
-        j = arr.length - 2;
+        i = Number(arr.length) - 1;
+        j = Number(arr.length) - 2;
         if (arr[j] !== 1) {
           result = arr[i];
         } else {
-          result = arr[i] + 4;
+          result = arr[i] + 10;
         }
       } else {
         result = arr;
       }
-      return Number(result);
+      return result;
     };
     switch (getLastNumber()) {
       case 1:

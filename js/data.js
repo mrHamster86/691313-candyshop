@@ -119,7 +119,7 @@
     var ingredients = window.util.getRandomArr(dataTemplate.nutritionFacts.contents.name, dataTemplate.nutritionFacts.contents.number);
     var randomGoods = {
       name: window.util.getRandomElement(dataTemplate.name),
-      picture: 'img/cards/' + window.util.getRandomElement(dataTemplate.picture),
+      picture: window.util.getRandomElement(dataTemplate.picture),
       amount: window.util.getRandomNumber(dataTemplate.amount.max),
       price: window.util.getRandomNumber(dataTemplate.price.min, dataTemplate.price.max),
       weight: window.util.getRandomNumber(dataTemplate.weight.min, dataTemplate.weight.max),
@@ -146,5 +146,5 @@
     goodsList: {},
     randomGoodsList: []
   };
-  getRandomListGoods(templateGoods, numberOfCatalogGoods);
+  // getRandomListGoods(templateGoods, numberOfCatalogGoods);
 })();
