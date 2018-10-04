@@ -1,24 +1,9 @@
 'use strict';
 (function () {
-  var catalogCards = document.querySelector('.catalog__cards');
-  var goodsList = window.data.goodsList;
+
   var orderCards = document.querySelector('.goods__cards');
 
-  var onLoadError = function (message) {
-    var modalError = document.querySelector('.modal--error');
-    modalError.classList.remove('modal--hidden');
-    modalError.querySelector('.modal__message').textContent = message;
-  };
-  var onLoadSuccess = function (data) {
-    for (var i = 0; i < data.length; i++) {
-      window.data.goodsList[data[i].name] = data[i];
-    }
-    var fragment = window.renderCard.catalog(data);
-    catalogCards.classList.remove('catalog__cards--load');
-    catalogCards.querySelector('.catalog__load').classList.add('visually-hidden');
-    catalogCards.appendChild(fragment);
-  };
-  window.load('https://js.dump.academy/candyshop/data', onLoadSuccess, onLoadError);
+
 
   var onFavoriteBtnClick = function (favoriteBtn) {
     favoriteBtn.classList.toggle('card__btn-favorite--selected');
@@ -39,7 +24,7 @@
     var isAddOrderBtn = evt.target.classList.contains('card__btn');
     if (isFavoriteBtn) {
       onFavoriteBtnClick(evt.target);
-    } else if (isAddOrderBtn && goodsList[name].amount !== 0) {
+    } else if (isAddOrderBtn && window.data.goodsList[name].amount !== 0) {
       onAddOrderClick(name);
     }
   };
