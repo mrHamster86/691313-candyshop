@@ -1,9 +1,6 @@
 'use strict';
 (function () {
-
   var orderCards = document.querySelector('.goods__cards');
-
-
 
   var onFavoriteBtnClick = function (favoriteBtn) {
     favoriteBtn.classList.toggle('card__btn-favorite--selected');

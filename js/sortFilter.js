@@ -1,7 +1,9 @@
 'use strict';
 (function () {
-  var catalogFilter = document.querySelector('.catalog__sidebar');
-  var catalogCards = document.querySelector('.catalog__cards');
+  var FILTER = document.querySelector('.catalog__sidebar');
+  var RADIO = FILTER.querySelectorAll('.input-btn__input--radio');
+  var CATALOG_CARDS = document.querySelector('.catalog__cards');
+
   var filterMap = {
     popular: function (arr) {
       return (arr.sort(function (a, b) {
@@ -12,7 +14,7 @@
           return -1;
         }
         return 0;
-      }));;
+      }));
     },
     expensive: function (arr) {
       return (arr.sort(function (a, b) {
@@ -51,25 +53,24 @@
   window.sortFilter = {
     runRender: function (arr) {
       var key;
-      var cards = catalogCards.querySelectorAll('.catalog__card');
+      var cards = CATALOG_CARDS.querySelectorAll('.catalog__card');
       cards.forEach(function (it) {
         it.remove();
       });
-      catalogFilter.querySelectorAll('.input-btn__input--radio').forEach(function (it) {
-        if (it.checked === true) {
+      RADIO.forEach(function (it) {
+        if (it.checked) {
           key = it.value;
         }
       });
       var fragment = window.renderCard.catalog(filterMap[key](arr));
-      catalogCards.appendChild(fragment);
+      CATALOG_CARDS.appendChild(fragment);
     }
   };
-  var onSortGoodsChange = function (evt) {
+  var onSortGoodsChange = function () {
     window.sortFilter.runRender(window.data.filterGoods);
   };
 
-  catalogFilter.querySelector('#filter-popular').addEventListener('change', onSortGoodsChange);
-  catalogFilter.querySelector('#filter-expensive').addEventListener('change', onSortGoodsChange);
-  catalogFilter.querySelector('#filter-cheep').addEventListener('change', onSortGoodsChange);
-  catalogFilter.querySelector('#filter-rating').addEventListener('change', onSortGoodsChange);
+  RADIO.forEach(function (it) {
+    it.addEventListener('change', onSortGoodsChange);
+  });
 }());

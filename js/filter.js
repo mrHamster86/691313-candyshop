@@ -5,15 +5,11 @@
   var leftPin = range.querySelector('.range__btn--left');
   var rightPin = range.querySelector('.range__btn--right');
   var fillLine = range.querySelector('.range__fill-line');
-
   var pinWidth = leftPin.offsetWidth;
-
-  var calculatePrice = function () {
-    var min = range.querySelector('.range__price--min');
-    var max = range.querySelector('.range__price--max');
-    var scopeWidth = scope.offsetWidth - pinWidth;
-    min.textContent = Math.round(leftPin.offsetLeft * 100 / scopeWidth) + '%';
-    max.textContent = Math.round(rightPin.offsetLeft * 100 / scopeWidth) + '%';
+  var scopeWidth = scope.offsetWidth - pinWidth;
+  window.slider = {
+    left: (leftPin.offsetLeft / scopeWidth),
+    right: (rightPin.offsetLeft / scopeWidth)
   };
 
   range.addEventListener('mousedown', function (evt) {
@@ -50,7 +46,9 @@
         rightPin.style.right = rightScope - scope.offsetLeft - newCoords + 'px';
         fillLine.style.right = rightScope - scope.offsetLeft - newCoords + 'px';
       }
-      calculatePrice();
+      window.slider.left = leftPin.offsetLeft / scopeWidth;
+      window.slider.right = rightPin.offsetLeft / scopeWidth;
+      window.typeFilter.calculatePrice();
     };
     var onMouseUp = function (upEvt) {
       upEvt.preventDefault();
@@ -60,5 +58,4 @@
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   });
-  calculatePrice();
 }());

@@ -1,96 +1,151 @@
 'use strict';
 (function () {
-  var GOODS = window.data.goods;
-  var catalogFilter = document.querySelector('.catalog__sidebar');
-  var catalogCards = document.querySelector('.catalog__cards');
-  var filterCheckbox = catalogFilter.querySelectorAll('.input-btn__input--checkbox');
-  window.calculateCount = function () {
-    window.typeMap = {
-      'icecream': window.data.goods.slice(0).filter(function (it) {
-        return it.kind === 'Мороженое';
-      }),
-      'soda': window.data.goods.slice(0).filter(function (it) {
-        return it.kind === 'Газировка';
-      }),
-      'gum': window.data.goods.slice(0).filter(function (it) {
-        return it.kind === 'Жевательная резинка';
-      }),
-      'marmalade': window.data.goods.slice(0).filter(function (it) {
-        return it.kind === 'Мармелад';
-      }),
-      'marshmallows': window.data.goods.slice(0).filter(function (it) {
-        return it.kind === 'Зефир';
-      }),
-      'sugar-free': window.data.goods.slice(0).filter(function (it) {
-        return it.nutritionFacts.sugar === false;
-      }),
-      'vegetarian': window.data.goods.slice(0).filter(function (it) {
-        return it.nutritionFacts.vegetarian === true;
-      }),
-      'gluten-free': window.data.goods.slice(0).filter(function (it) {
-        return it.nutritionFacts.gluten === false;
-      }),
-      'favorite': window.data.goods.slice(0).filter(function (it) {
-        return it.favorite === true;
-      }),
-      'availability': window.data.goods.slice(0).filter(function (it) {
-        return it.amount > 0;
-      })
+  var FILTER = document.querySelector('.catalog__sidebar');
+  var CHECKBOX = FILTER.querySelectorAll('.input-btn__input--checkbox');
+  var RANGE = FILTER.querySelector('.range');
+  var filterType = [];
+  var filterSugarGluten = [];
+  var filterVegetarian = [];
+  var filterPrice = [];
+  var filterResults = [];
+
+  window.typeFilter = {
+    calculatePrice: function () {
+      var range = window.data.price[1] - window.data.price[0];
+      var MIN = FILTER.querySelector('.range__price--min');
+      var MAX = FILTER.querySelector('.range__price--max');
+      filterPrice = [Math.round(range * window.slider.left), Math.round(range * window.slider.right)];
+      MIN.textContent = filterPrice[0];
+      MAX.textContent = filterPrice[1];
+    }
+  };
+
+  var customiseFilters = function (target) {
+    var key = target.value;
+    var typeMap = {
+      'icecream': 'Мороженое',
+      'soda': 'Газировка',
+      'gum': 'Жевательная резинка',
+      'marmalade': 'Мармелад',
+      'marshmallows': 'Зефир'
     };
-    filterCheckbox.forEach(function (it) {
-      var key = it.value;
-      it.addEventListener('click', onTypeGoodsChange);
-      var countSpan = it.parentElement.querySelector('.input-btn__item-count');
-      if (window.typeMap[key]) {
-        countSpan.textContent = '(' + window.typeMap[key].length + ')';
+    var nutritionMap = {
+      'sugar-free': 'sugar',
+      'gluten-free': 'gluten'
+    };
+    var isKeyForMap = function (it) {
+      return key === it;
+    };
+    if (Object.keys(typeMap).some(isKeyForMap)) {
+      if (target.checked) {
+        filterType.push(typeMap[key]);
+      } else {
+        filterType.splice(filterType.indexOf(typeMap[key]), 1);
       }
+    }
+    if (Object.keys(nutritionMap).some(isKeyForMap)) {
+      if (target.checked) {
+        filterSugarGluten.push(nutritionMap[key]);
+      } else {
+        filterSugarGluten.splice(filterSugarGluten.indexOf(nutritionMap[key]), 1);
+      }
+    }
+    if (key === 'vegetarian') {
+      if (target.checked) {
+        filterVegetarian.push(key);
+      } else {
+        filterVegetarian.splice(filterVegetarian.indexOf(key), 1);
+      }
+    }
+  };
+
+  var unchecked = function (target) {
+    CHECKBOX.forEach(function (it) {
+      if (it !== target) {
+        it.checked = false;
+      }
+    });
+    filterType = [];
+    filterSugarGluten = [];
+    filterVegetarian = [];
+    window.data.filterGoods = filterResults;
+    window.sortFilter.runRender(window.data.filterGoods);
+  };
+
+  var getGoodsAmount = function (arr) {
+    filterResults = arr.filter(function (it) {
+      return it.amount > 0;
     });
   };
-  var arrKeys = [];
-  var onTypeGoodsChange = function (evt) {
-    var checkbox = evt.currentTarget;
-    var key = checkbox.value;
-
-    var arrType = [];
-    var arrList = [];
-    var arrNnutrition = window.data.goods.slice(0);
-    var arrResult = [];
-    filterCheckbox.forEach(function (it) {
-      var key = it.value;
-      if (it.checked) {
-        if (key === 'icecream' || key === 'soda' || key === 'gum' || key === 'marmalade' || key === 'marshmallows') {
-          arrType = arrType.concat(window.typeMap[key]);
-        } else if (key === 'sugar-free' || key === 'vegetarian' || key === 'gluten-free') {
-          arrNnutrition = arrNnutrition.concat(window.typeMap[key]);
-          arrNnutrition = arrNnutrition.filter(function (it, i) {
-            return arrNnutrition.indexOf(it) !== i;
-          });
-        }  else if (key === 'favorite' || key === 'availability') {
-          arrList = arrList.concat(window.typeMap[key]);
-        }
-      }
+  var getGoodsFavorite = function (arr) {
+    filterResults = arr.filter(function (it) {
+      return it.favorite === true;
     });
-
-    arrResult = arrResult.concat(arrType).concat(arrNnutrition).concat(arrList)
-    if(arrType.length > 0 || arrList.length > 0) {
-      arrResult = arrResult.filter(function (it, i) {
-        return arrResult.indexOf(it) !== i;
+  };
+  var getGoodsType = function (arr) {
+    if (filterType.length) {
+      filterResults = arr.filter(function (it) {
+        return filterType.some(function (i) {
+          return it.kind === i;
+        });
       });
     }
-    console.log(arrResult)
-    window.sortFilter.runRender(arrResult);
-    if (arrResult.length === 0) {
-      var errorFilter = document.querySelector('#empty-filters').content.querySelector('.catalog__empty-filter');
-      catalogCards.appendChild(errorFilter);
-    } else {
-      // catalogCards.querySelector('.catalog__empty-filter').remove();
+  };
+  var getGoodsSugarGluten = function (arr) {
+    if (filterSugarGluten.length) {
+      filterResults = arr.filter(function (it) {
+        return filterSugarGluten.every(function (i) {
+          return !it.nutritionFacts[i];
+        });
+      });
     }
-
+  };
+  var getGoodsVegetarian = function (arr) {
+    if (filterVegetarian.length) {
+      filterResults = arr.filter(function (it) {
+        return it.nutritionFacts['vegetarian'];
+      });
+    }
+  };
+  var getGoodsPprice = function (arr) {
+    filterResults = arr.filter(function (it) {
+      return it.price >= filterPrice[0] && it.price <= filterPrice[1];
+    });
   };
 
-  // catalogFilter.querySelector('#filter-icecream').addEventListener('click', onTypeGoodsChange);
-  // catalogFilter.querySelector('#filter-soda').addEventListener('click', onTypeGoodsChange);
-  // catalogFilter.querySelector('#filter-gum').addEventListener('click', onTypeGoodsChange);
-  // catalogFilter.querySelector('#filter-marmalade').addEventListener('click', onTypeGoodsChange);
-  // catalogFilter.querySelector('#filter-marshmallows').addEventListener('click', onTypeGoodsChange);
+  var onFilterChange = function (evt) {
+    var FAVORITE = FILTER.querySelector('#filter-favorite');
+    var AVALABILITY = FILTER.querySelector('#filter-availability');
+    var target = evt.currentTarget;
+
+    if (target === FAVORITE && target.checked) {
+      getGoodsFavorite(window.data.goods);
+      unchecked(target);
+      return;
+    } else if (target === AVALABILITY && target.checked) {
+      getGoodsAmount(window.data.goods);
+      unchecked(target);
+      return;
+    }
+    if (!FAVORITE.checked && !AVALABILITY.checked) {
+      filterResults = window.data.goods;
+    }
+    customiseFilters(target);
+    getGoodsType(filterResults);
+    getGoodsSugarGluten(filterResults);
+    getGoodsVegetarian(filterResults);
+    getGoodsPprice(filterResults);
+
+    window.data.filterGoods = filterResults;
+    window.sortFilter.runRender(window.data.filterGoods);
+    document.removeEventListener('mouseup', onFilterChange);
+  };
+
+  RANGE.addEventListener('mousedown', function () {
+    document.addEventListener('mouseup', onFilterChange);
+  });
+
+  CHECKBOX.forEach(function (it) {
+    it.addEventListener('change', onFilterChange);
+  });
 })();
