@@ -3,7 +3,6 @@
   var FILTER = document.querySelector('.catalog__sidebar');
   var RADIO = FILTER.querySelectorAll('.input-btn__input--radio');
   var CATALOG_CARDS = document.querySelector('.catalog__cards');
-  var newArr;
 
   var removeFilterError = function () {
     var filterError = CATALOG_CARDS.querySelector('.catalog__empty-filter');
@@ -66,11 +65,6 @@
     render: function (arr) {
       var key;
       var filterError = CATALOG_CARDS.querySelector('.catalog__empty-filter');
-      RADIO.forEach(function (it) {
-        if (it.checked) {
-          key = it.value;
-        }
-      });
       if (filterError === null) {
         var cards = CATALOG_CARDS.querySelectorAll('.catalog__card');
         cards.forEach(function (it) {
@@ -79,6 +73,11 @@
       } else {
         removeFilterError();
       }
+      RADIO.forEach(function (it) {
+        if (it.checked) {
+          key = it.value;
+        }
+      });
       if (arr.length > 0) {
         var fragment = window.renderCard.catalog(filterMap[key](arr));
       } else {
@@ -88,8 +87,7 @@
       CATALOG_CARDS.appendChild(fragment);
     },
     runRender: window.debounce(function (arr) {
-      newArr = arr;
-      window.sortFilter.render(newArr);
+      window.sortFilter.render(arr);
     })
   };
   var onSortGoodsChange = function () {
