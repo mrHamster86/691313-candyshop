@@ -3,6 +3,17 @@
   var FILTER = document.querySelector('.catalog__sidebar');
   var RADIO = FILTER.querySelectorAll('.input-btn__input--radio');
   var CATALOG_CARDS = document.querySelector('.catalog__cards');
+  var newArr;
+
+  var removeFilterError = function () {
+    var filterError = CATALOG_CARDS.querySelector('.catalog__empty-filter');
+    filterError.removeEventListener('click', onShowAll);
+    filterError.remove();
+  };
+  var onShowAll = function (evt) {
+    evt.preventDefault();
+    window.typeFilter.unchecked(window.data.goods);
+  };
 
   var filterMap = {
     popular: function (arr) {
@@ -50,21 +61,36 @@
       }));
     }
   };
+
   window.sortFilter = {
-    runRender: function (arr) {
+    render: function (arr) {
       var key;
-      var cards = CATALOG_CARDS.querySelectorAll('.catalog__card');
-      cards.forEach(function (it) {
-        it.remove();
-      });
+      var filterError = CATALOG_CARDS.querySelector('.catalog__empty-filter');
       RADIO.forEach(function (it) {
         if (it.checked) {
           key = it.value;
         }
       });
-      var fragment = window.renderCard.catalog(filterMap[key](arr));
+      if (filterError === null) {
+        var cards = CATALOG_CARDS.querySelectorAll('.catalog__card');
+        cards.forEach(function (it) {
+          it.remove();
+        });
+      } else {
+        removeFilterError();
+      }
+      if (arr.length > 0) {
+        var fragment = window.renderCard.catalog(filterMap[key](arr));
+      } else {
+        fragment = document.querySelector('#empty-filters').content.cloneNode(true);
+        fragment.querySelector('.catalog__show-all').addEventListener('click', onShowAll);
+      }
       CATALOG_CARDS.appendChild(fragment);
-    }
+    },
+    runRender: window.debounce(function (arr) {
+      newArr = arr;
+      window.sortFilter.render(newArr);
+    })
   };
   var onSortGoodsChange = function () {
     window.sortFilter.runRender(window.data.filterGoods);

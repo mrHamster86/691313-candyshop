@@ -46,6 +46,12 @@
       if (goods.nutritionFacts.sugar) {
         sugarContent = 'Содержит сахар';
       }
+      var isFavorite = window.typeFilter.favoriteGoods.some(function (i) {
+        return goods.name === i;
+      });
+      if (isFavorite) {
+        card.querySelector('.card__btn-favorite').classList.add('card__btn-favorite--selected');
+      }
       card.querySelector('.card__characteristic').textContent = sugarContent + '. ' + goods.nutritionFacts.energy + ' ккал';
       card.querySelector('.card__composition-list').textContent = goods.nutritionFacts.contents;
       window.catalog.events(card);

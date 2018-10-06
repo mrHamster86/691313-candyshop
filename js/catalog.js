@@ -2,7 +2,14 @@
 (function () {
   var orderCards = document.querySelector('.goods__cards');
 
-  var onFavoriteBtnClick = function (favoriteBtn) {
+  var onFavoriteBtnClick = function (favoriteBtn, goodsName) {
+    var isFavoriteBtn = favoriteBtn.classList.contains('card__btn-favorite--selected');
+    if (!isFavoriteBtn) {
+      window.typeFilter.favoriteGoods.push(goodsName);
+    } else {
+      window.typeFilter.favoriteGoods.splice(window.typeFilter.favoriteGoods.indexOf(goodsName), 1);
+    }
+    window.renderFilter.renderFavoriteCount();
     favoriteBtn.classList.toggle('card__btn-favorite--selected');
   };
   var onAddOrderClick = function (name) {
@@ -20,7 +27,7 @@
     var isFavoriteBtn = evt.target.classList.contains('card__btn-favorite');
     var isAddOrderBtn = evt.target.classList.contains('card__btn');
     if (isFavoriteBtn) {
-      onFavoriteBtnClick(evt.target);
+      onFavoriteBtnClick(evt.target, name);
     } else if (isAddOrderBtn && window.data.goodsList[name].amount !== 0) {
       onAddOrderClick(name);
     }

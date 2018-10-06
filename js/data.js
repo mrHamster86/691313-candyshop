@@ -18,14 +18,16 @@
     for (var i = 0; i < data.length; i++) {
       priceArr.push(data[i].price);
       window.data.goodsList[data[i].name] = data[i];
+      window.renderFilter.calculateCount(data[i]);
     }
     window.data.price = [Math.min.apply(Math, priceArr), Math.max.apply(Math, priceArr)];
     window.data.goods = data;
     window.data.filterGoods = data;
     CATALOG_CARDS.classList.remove('catalog__cards--load');
     CATALOG_CARDS.querySelector('.catalog__load').classList.add('visually-hidden');
-    window.sortFilter.runRender(window.data.goods);
+    window.sortFilter.render(window.data.goods);
     window.typeFilter.calculatePrice();
+    window.renderFilter.renderCount();
   };
   window.load('https://js.dump.academy/candyshop/data', onLoadSuccess, onLoadError);
 })();
