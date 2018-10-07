@@ -281,9 +281,8 @@
 
   var form = buy.querySelector('form');
   var onLoadError = function (message) {
-    var modalError = document.querySelector('.modal--error');
-    modalError.classList.remove('modal--hidden');
-    modalError.querySelector('.modal__message').textContent = message;
+    var MODAL_ERROR = document.querySelector('.modal--error');
+    window.modal.open(MODAL_ERROR, message);
   };
   var onLoadSuccess = function () {
     var cards = orderCards.querySelectorAll('.card-order');
@@ -291,10 +290,11 @@
       var name = cards[i].querySelector('.card-order__title').textContent;
       window.orderSetup.deleteCard(cards[i], name);
     }
+    var MODAL_SUCCESS = document.querySelector('.modal--success');
     window.orderForm.lockAllOrderForm();
     orderCards.classList.toggle('goods__cards--empty');
     orderCards.querySelector('.goods__card-empty').classList.toggle('visually-hidden');
-    document.querySelector('.modal--success').classList.remove('modal--hidden');
+    window.modal.open(MODAL_SUCCESS);
   };
 
   form.addEventListener('submit', function (evt) {
