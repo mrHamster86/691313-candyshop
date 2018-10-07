@@ -30,7 +30,7 @@
 
       if (evt.target === leftPin) {
         var leftScope = scope.offsetLeft;
-        var rightScope = scope.offsetLeft + rightPin.offsetLeft - pinWidth;
+        var rightScope = scope.offsetLeft + rightPin.offsetLeft;
         var newCoords = leftPin.offsetLeft - shift;
         if (moveEvt.clientX < leftScope) {
           newCoords = 0;
@@ -42,7 +42,7 @@
         fillLine.style.left = newCoords + 'px';
       }
       if (evt.target === rightPin) {
-        leftScope = scope.offsetLeft + leftPin.offsetLeft + pinWidth;
+        leftScope = scope.offsetLeft + leftPin.offsetLeft;
         rightScope = scope.offsetLeft + scope.offsetWidth - pinWidth;
         newCoords = rightPin.offsetLeft - shift;
         if (moveEvt.clientX < leftScope) {
