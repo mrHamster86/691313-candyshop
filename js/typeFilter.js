@@ -21,7 +21,9 @@
   var filterSugarGluten = [];
   var filterVegetarian = [];
   var filterPrice = [];
-  var filterResults = [];
+
+  var filterResult = [];
+  var groupGoods = [];
 
   window.typeFilter = {
     favoriteGoods: [],
@@ -40,6 +42,7 @@
       filterType = [];
       filterSugarGluten = [];
       filterVegetarian = [];
+      window.data.filterGoods = arr;
       window.slider.moveStartPin();
       window.typeFilter.calculatePrice();
       window.sortFilter.runRender(arr);
@@ -87,7 +90,7 @@
   };
   var getGoodsType = function (arr) {
     if (filterType.length > 0) {
-      filterResults = arr.filter(function (it) {
+      filterResult = arr.filter(function (it) {
         return filterType.some(function (i) {
           return it.kind === i;
         });
@@ -96,7 +99,7 @@
   };
   var getGoodsSugarGluten = function (arr) {
     if (filterSugarGluten.length > 0) {
-      filterResults = arr.filter(function (it) {
+      filterResult = arr.filter(function (it) {
         return filterSugarGluten.every(function (i) {
           return !it.nutritionFacts[i];
         });
@@ -105,16 +108,16 @@
   };
   var getGoodsVegetarian = function (arr) {
     if (filterVegetarian.length > 0) {
-      filterResults = arr.filter(function (it) {
+      filterResult = arr.filter(function (it) {
         return it.nutritionFacts['vegetarian'];
       });
     }
   };
   var getGoodsPprice = function (arr) {
-    filterResults = arr.filter(function (it) {
+    filterResult = arr.filter(function (it) {
       return it.price >= filterPrice[0] && it.price <= filterPrice[1];
     });
-    RANGE.querySelector('.range__count').textContent = '(' + filterResults.length + ')';
+    RANGE.querySelector('.range__count').textContent = '(' + filterResult.length + ')';
   };
 
   var onFilterChange = function (evt) {
@@ -123,25 +126,29 @@
     var target = evt.currentTarget;
 
     if (target === FAVORITE && target.checked) {
-      window.typeFilter.unchecked(getGoodsFavorite(window.data.goods));
+      groupGoods = getGoodsFavorite(window.data.goods);
+      window.typeFilter.unchecked(groupGoods);
       target.checked = true;
       return;
     } else if (target === AVALABILITY && target.checked) {
-      window.typeFilter.unchecked(getGoodsAmount(window.data.goods));
+      groupGoods = getGoodsAmount(window.data.goods);
+      window.typeFilter.unchecked(groupGoods);
       target.checked = true;
       return;
     }
-    if (!FAVORITE.checked && !AVALABILITY.checked) {
-      filterResults = window.data.goods;
+    if (FAVORITE.checked || AVALABILITY.checked) {
+      filterResult = groupGoods;
+    } else {
+      filterResult = window.data.goods;
     }
     customiseFilters(target);
-    getGoodsType(filterResults);
-    getGoodsSugarGluten(filterResults);
-    getGoodsVegetarian(filterResults);
-    getGoodsPprice(filterResults);
+    getGoodsType(filterResult);
+    getGoodsSugarGluten(filterResult);
+    getGoodsVegetarian(filterResult);
+    getGoodsPprice(filterResult);
 
-    window.data.filterGoods = filterResults;
-    window.sortFilter.runRender(window.data.filterGoods);
+    window.data.filterGoods = filterResult;
+    window.sortFilter.runRender(filterResult);
     document.removeEventListener('mouseup', onFilterChange);
   };
 
