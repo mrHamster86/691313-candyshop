@@ -21,39 +21,39 @@
   };
 
   range.addEventListener('mousedown', function (evt) {
-    var startCoords = evt.clientX;
+    var coordsPinLeft = leftPin.getBoundingClientRect();
+    var coordsPinRight = rightPin.getBoundingClientRect();
+    var scopeCoords = scope.getBoundingClientRect();
 
     var onMouseMove = function (moveEvt) {
       moveEvt.preventDefault();
-      var shift = startCoords - moveEvt.clientX;
-      startCoords = moveEvt.clientX;
 
       if (evt.target === leftPin) {
-        var leftScope = scope.offsetLeft;
-        var rightScope = scope.offsetLeft + rightPin.offsetLeft;
-        var newCoords = leftPin.offsetLeft - shift;
-        if (moveEvt.clientX < leftScope) {
-          newCoords = 0;
+        var newCoords = moveEvt.clientX - (pinWidth / 2);
+        if (newCoords <= scopeCoords.left) {
+          leftPin.style.left = 0;
+          fillLine.style.left = 0;
+        } else if (newCoords >= coordsPinRight.left) {
+          leftPin.style.left = coordsPinRight.left - scopeCoords.left + 'px';
+          fillLine.style.left = coordsPinRight.left - scopeCoords.left + 'px';
+        } else {
+          leftPin.style.left = newCoords - scopeCoords.left + 'px';
+          fillLine.style.left = newCoords - scopeCoords.left + 'px';
         }
-        if (moveEvt.clientX > rightScope) {
-          newCoords = rightScope - leftScope;
+      } else if (evt.target === rightPin) {
+        newCoords = moveEvt.clientX + (pinWidth / 2);
+        if (newCoords >= scopeCoords.right) {
+          rightPin.style.right = 0;
+          fillLine.style.right = 0;
+        } else if (newCoords <= coordsPinLeft.right) {
+          rightPin.style.right = scopeCoords.right - coordsPinLeft.right + 'px';
+          fillLine.style.right = scopeCoords.right - coordsPinLeft.right + 'px';
+        } else {
+          rightPin.style.right = scopeCoords.right - newCoords + 'px';
+          fillLine.style.right = scopeCoords.right - newCoords + 'px';
         }
-        leftPin.style.left = newCoords + 'px';
-        fillLine.style.left = newCoords + 'px';
       }
-      if (evt.target === rightPin) {
-        leftScope = scope.offsetLeft + leftPin.offsetLeft;
-        rightScope = scope.offsetLeft + scope.offsetWidth - pinWidth;
-        newCoords = rightPin.offsetLeft - shift;
-        if (moveEvt.clientX < leftScope) {
-          newCoords = leftScope - scope.offsetLeft;
-        }
-        if (moveEvt.clientX > rightScope) {
-          newCoords = rightScope - scope.offsetLeft;
-        }
-        rightPin.style.right = rightScope - scope.offsetLeft - newCoords + 'px';
-        fillLine.style.right = rightScope - scope.offsetLeft - newCoords + 'px';
-      }
+
       window.slider.left = leftPin.offsetLeft / scopeWidth;
       window.slider.right = rightPin.offsetLeft / scopeWidth;
       window.typeFilter.calculatePrice();

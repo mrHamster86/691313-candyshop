@@ -17,46 +17,25 @@
   var filterMap = {
     popular: function (arr) {
       return (arr.sort(function (a, b) {
-        if (a.rating.number < b.rating.number) {
-          return 1;
-        }
-        if (a.rating.number > b.rating.number) {
-          return -1;
-        }
-        return 0;
+        return b.rating.number - a.rating.number;
       }));
     },
     expensive: function (arr) {
       return (arr.sort(function (a, b) {
-        if (a.price < b.price) {
-          return 1;
-        }
-        if (a.price > b.price) {
-          return -1;
-        }
-        return 0;
+        return b.price - a.price;
       }));
     },
     cheep: function (arr) {
       return (arr.sort(function (a, b) {
-        if (a.price > b.price) {
-          return 1;
-        }
-        if (a.price < b.price) {
-          return -1;
-        }
-        return 0;
+        return a.price - b.price;
       }));
     },
     rating: function (arr) {
       return (arr.sort(function (a, b) {
-        if (a.rating.value < b.rating.value) {
-          return 1;
+        if (b.rating.value === a.rating.value) {
+          return b.rating.number - a.rating.number;
         }
-        if (a.rating.value > b.rating.value) {
-          return -1;
-        }
-        return 0;
+        return b.rating.value - a.rating.value;
       }));
     }
   };
