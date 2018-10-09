@@ -1,3 +1,4 @@
+'use strict';
 (function () {
   window.load = function (url, onLoad, onError) {
     var xhr = new XMLHttpRequest();
