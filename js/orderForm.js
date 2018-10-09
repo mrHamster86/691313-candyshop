@@ -109,14 +109,14 @@
     var sum = 0;
     var arr = cardNumber.value.replace(/\s/g, '').split('');
     for (var i = 0; i < arr.length; i++) {
-      arr[i] = +arr[i];
-      if (arr[i] % 2 !== 0) {
-        arr[i] *= 2;
-        if (arr[i] >= 10) {
-          arr[i] -= 9;
+      var j = parseInt(arr[i], 10);
+      if ((i + 1) % 2 !== 0) {
+        j *= 2;
+        if (j >= 10) {
+          j -= 9;
         }
       }
-      sum += arr[i];
+      sum += j;
     }
     return sum % 10 === 0 && sum !== 0;
   };
@@ -143,7 +143,7 @@
       cardStatus.textContent = 'Одобрен';
       window.orderForm.cardStatusValidity = true;
     } else {
-      cardStatus.textContent = 'Неизвестен';
+      cardStatus.textContent = 'Не определён';
       window.orderForm.cardStatusValidity = false;
     }
   };
@@ -314,5 +314,6 @@
     } else {
       window.upload(formData, onLoadSuccess, onLoadError);
     }
+    form.reset();
   });
 }());

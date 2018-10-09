@@ -18,15 +18,16 @@
       var result = 0;
       var arr = String(window.orderSetup.totalGoodsInOrder);
       if (arr.length > 1) {
-        i = Number(arr.length) - 1;
-        j = Number(arr.length) - 2;
-        if (arr[j] !== 1) {
-          result = arr[i];
+        i = arr.length - 1;
+        j = arr.length - 2;
+        if (parseInt(arr[j], 10) !== 1) {
+          result = parseInt(arr[i], 10);
         } else {
-          result = arr[i] + 10;
+          result = parseInt(arr[i], 10) + 10;
+
         }
       } else {
-        result = arr;
+        result = parseInt(arr, 10);
       }
       return result;
     };
