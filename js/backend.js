@@ -1,5 +1,6 @@
 'use strict';
 (function () {
+  var LOAD_TIMEOUT = 100000;
   window.load = function (url, onLoad, onError) {
     var xhr = new XMLHttpRequest();
     xhr.responseType = 'json';
@@ -16,7 +17,7 @@
     xhr.addEventListener('timeout', function () {
       onError('Запрос не успел выполниться за ' + xhr.timeout + 'мс');
     });
-    xhr.timeout = 100000;
+    xhr.timeout = LOAD_TIMEOUT;
     xhr.open('GET', url);
     xhr.send();
   };

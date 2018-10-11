@@ -26,7 +26,7 @@
     }
   };
   window.orderForm = {
-    lockAllOrderForm: function () {
+    lock: function () {
       toggleDisabledForm(contact.querySelectorAll('input'), true);
       toggleDisabledForm(payment.querySelectorAll('input'), true);
       toggleDisabledForm(deliver.querySelectorAll('.deliver__toggle input'), true);
@@ -34,7 +34,7 @@
       deliverAddressFieldset.disabled = true;
       buySubmitBtn.disabled = true;
     },
-    unlockOrderForm: function () {
+    unlock: function () {
       toggleDisabledForm(contact.querySelectorAll('input'), false);
       toggleDisabledForm(payment.querySelectorAll('.payment__method input'), false);
       toggleDisabledForm(deliver.querySelectorAll('.deliver__toggle input'), false);
@@ -51,7 +51,7 @@
       buySubmitBtn.disabled = false;
     }
   };
-  window.orderForm.lockAllOrderForm();
+  window.orderForm.lock();
   var onPaymentTogleClick = function (evt) {
     payment.querySelector('.payment__cash-wrap').classList.toggle('visually-hidden');
     payment.querySelector('.payment__card-wrap').classList.toggle('visually-hidden');
@@ -121,25 +121,35 @@
     return sum % 10 === 0 && sum !== 0;
   };
   var dateValidity = function () {
+    var DELTA_YEAR = 2000;
     var date = new Date();
     var currentYear = date.getFullYear();
     var currentMonth = date.getMonth();
     var dateArr = cardDate.value.split('/');
     var month = +dateArr[0];
     var year = +dateArr[1];
-    return month > currentMonth && (2000 + year) >= currentYear;
+    return month > currentMonth && (DELTA_YEAR + year) >= currentYear;
   };
   var holderValidity = function () {
+    var MIN_LENGTH_NAME = 4;
+    var MAX_LENGTH_NAME = 25;
     var length = cardHolder.value.length;
-    return length > 4 && length < 25;
+    return length > MIN_LENGTH_NAME && length < MAX_LENGTH_NAME;
   };
   var cvcValidity = function () {
+    var LENGTH_CVC = 3;
+    var MIN_VALUE = 100;
+    var value = cardCvc.value;
     var length = cardCvc.value.length;
-    return length === 3;
+    return length === LENGTH_CVC && value >= MIN_VALUE;
   };
-  var onCardChange = function () {
+
+  var validityCardChange = function () {
+    return numberValidity() && dateValidity() && cvcValidity() && holderValidity();
+  };
+  var replaceCardValidity = function () {
     var cardStatus = payment.querySelector('.payment__card-status');
-    if (numberValidity() && dateValidity() && cvcValidity() && holderValidity()) {
+    if (validityCardChange()) {
       cardStatus.textContent = 'Одобрен';
       window.orderForm.cardStatusValidity = true;
     } else {
@@ -147,7 +157,18 @@
       window.orderForm.cardStatusValidity = false;
     }
   };
-
+  var onNumberChange = function () {
+    replaceCardValidity();
+  };
+  var onDateChange = function () {
+    replaceCardValidity();
+  };
+  var onHolderChange = function () {
+    replaceCardValidity();
+  };
+  var onCvcChange = function () {
+    replaceCardValidity();
+  };
   cardNumber.addEventListener('invalid', function () {
     if (cardNumber.validity.tooShort) {
       cardNumber.setCustomValidity('Введите 16-ти значный номер карты');
@@ -273,10 +294,11 @@
         break;
     }
   };
-  cardNumber.addEventListener('blur', onCardChange);
-  cardDate.addEventListener('blur', onCardChange);
-  cardCvc.addEventListener('blur', onCardChange);
-  cardHolder.addEventListener('input', onCardChange);
+
+  cardNumber.addEventListener('blur', onNumberChange);
+  cardDate.addEventListener('blur', onDateChange);
+  cardCvc.addEventListener('blur', onCvcChange);
+  cardHolder.addEventListener('input', onHolderChange);
   deliver.querySelector('.deliver__store-list').addEventListener('change', onStoreChange);
 
   var form = buy.querySelector('form');
@@ -291,7 +313,7 @@
       window.orderSetup.deleteCard(cards[i], name);
     }
     var MODAL_SUCCESS = document.querySelector('.modal--success');
-    window.orderForm.lockAllOrderForm();
+    window.orderForm.lock();
     orderCards.classList.toggle('goods__cards--empty');
     orderCards.querySelector('.goods__card-empty').classList.toggle('visually-hidden');
     window.modal.open(MODAL_SUCCESS);

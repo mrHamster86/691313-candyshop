@@ -15,7 +15,7 @@
   var onAddOrderClick = function (name) {
     var totalGoodsInOrder = window.orderSetup.totalGoodsInOrder;
     if (totalGoodsInOrder === 0) {
-      window.orderForm.unlockOrderForm();
+      window.orderForm.unlock();
       orderCards.classList.toggle('goods__cards--empty');
       orderCards.querySelector('.goods__card-empty').classList.toggle('visually-hidden');
     }
